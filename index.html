@@ -42,7 +42,7 @@
         .company-info { text-align: left; }
         .company-info h1 { font-size: 2rem; margin-bottom: 5px; }
         .company-details { font-size: 0.9rem; opacity: 0.9; }
-        .header-actions { display: flex; gap: 10px; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
         header h2 { font-size: 1.8rem; margin-bottom: 8px; font-weight: 300; }
 
         .card {
@@ -82,6 +82,8 @@
         .btn-danger:hover { background-color: #c0392b; transform: translateY(-2px); }
         .btn-info { background-color: #17a2b8; color: white; border-color: #138496; }
         .btn-info:hover { background-color: #138496; transform: translateY(-2px); }
+        .btn-secondary { background-color: var(--gray-color); color: white; border-color: #6c757d; }
+        .btn-secondary:hover { background-color: #6c757d; transform: translateY(-2px); }
         .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
 
         .table-container { overflow-x: auto; margin-top: 20px; border-radius: var(--border-radius); border: 2px solid var(--border-color); background: white; position: relative; }
@@ -151,6 +153,77 @@
         .day-checkbox-item.weekend { background-color: #fff8e1; border-color: #ffecb3; }
         .day-checkbox-item.holiday { background-color: #ffebee; border-color: #ffcdd2; }
 
+        .database-status { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background-color: #2ecc71; 
+            color: white; 
+            padding: 10px 15px; 
+            border-radius: 6px; 
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .database-status.error { background-color: #e74c3c; }
+        .database-status.warning { background-color: #f39c12; }
+
+        .backup-section { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background-color: #f8f9fa; 
+            border-radius: var(--border-radius); 
+            border: 1px solid var(--border-color);
+        }
+        
+        .backup-section h3 { 
+            margin-bottom: 10px; 
+            color: var(--primary-color); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+
+        .backup-actions { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+        }
+
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #2ecc71;
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+
+        .toast-notification.error {
+            background-color: #e74c3c;
+        }
+
+        .toast-notification.warning {
+            background-color: #f39c12;
+        }
+
         /* --- ESTILOS DE IMPRESSÃO --- */
         @media print {
             @page {
@@ -169,9 +242,9 @@
             
             /* Ocultar interface */
             .controls, .footer-info, .color-indicator, .edit-mode-indicator, 
-            .employee-list, .header-actions button,
+            .employee-list, .header-actions button, .backup-section,
             .month-year-selector, .btn:not(#advancedPrintBtn),
-            .card, .container > header {
+            .card, .container > header, .database-status {
                 display: none !important;
             }
 
@@ -323,6 +396,16 @@
                 </div>
             </div>
 
+            <div class="backup-section">
+                <h3><i class="fas fa-database"></i> Backup e Restauração</h3>
+                <div class="backup-actions">
+                    <button class="btn btn-secondary" id="exportBackupBtn"><i class="fas fa-file-export"></i> Exportar Backup</button>
+                    <button class="btn btn-secondary" id="importBackupBtn"><i class="fas fa-file-import"></i> Importar Backup</button>
+                    <input type="file" id="backupFileInput" accept=".json" style="display: none;">
+                    <button class="btn btn-info" id="clearDatabaseBtn"><i class="fas fa-trash-alt"></i> Limpar Dados</button>
+                </div>
+            </div>
+
             <div class="color-indicator">
                 <div class="color-indicator-item"><div class="color-box color-offday"></div><span>Folga</span></div>
                 <div class="color-indicator-item"><div class="color-box color-weekend"></div><span>Fim de semana</span></div>
@@ -387,6 +470,8 @@
                                 <option value="adm">Adm</option>
                                 <option value="op">Op</option>
                                 <option value="com">Com</option>
+                                <option value="rh">RH</option>
+                                <option value="ti">TI</option>
                             </select>
                         </div>
                     </div>
@@ -454,35 +539,48 @@
         </div>
     </div>
 
+    <div class="modal" id="clearDatabaseModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Limpar Dados</h3><button class="close-modal" id="closeClearDatabaseModal">&times;</button></div>
+            <form id="clearDatabaseForm">
+                <p style="margin-bottom: 20px; color: #e74c3c; font-weight: bold;">
+                    <i class="fas fa-exclamation-triangle"></i> ATENÇÃO: Esta ação apagará todos os dados do sistema (empresa e funcionários).
+                </p>
+                <p style="margin-bottom: 20px;">
+                    É recomendado exportar um backup antes de continuar.
+                </p>
+                <div class="form-group">
+                    <label for="confirmClearText">Digite "LIMPAR" para confirmar:</label>
+                    <input type="text" id="confirmClearText" class="form-control" placeholder="Digite LIMPAR aqui">
+                </div>
+                <div class="form-group" style="margin-top: 20px;">
+                    <button type="button" class="btn btn-danger" id="confirmClearBtn" style="width: 100%;" disabled>
+                        <i class="fas fa-trash"></i> Limpar Todos os Dados
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="printPreviewContainer" style="display: none;"></div>
+    <div id="toastNotification" class="toast-notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Operação realizada com sucesso!</span>
+    </div>
+    <div id="databaseStatus" class="database-status">
+        <i class="fas fa-database"></i>
+        <span id="databaseStatusText">IndexedDB Conectado</span>
+    </div>
 
     <script>
-        // --- DADOS ---
-        let employeesData = [
-            { id: 1, name: "João Silva", daysOff: [2, 9, 16, 23, 30], code: "JS01", role: "Analista", department: "adm" },
-            { id: 2, name: "Maria Santos", daysOff: [3, 10, 17, 24, 31], code: "MS02", role: "Gerente", department: "com" },
-            { id: 3, name: "Pedro Oliveira", daysOff: [4, 11, 18, 25], code: "PO03", role: "Técnico", department: "op" },
-            { id: 4, name: "Ana Costa", daysOff: [5, 12, 19, 26], code: "AC04", role: "Assistente", department: "rh" },
-            { id: 5, name: "Carlos Lima", daysOff: [6, 13, 20, 27], code: "CL05", role: "Dev", department: "ti" },
-            { id: 6, name: "Fernanda Souza", daysOff: [7, 14, 21, 28], code: "FS06", role: "Coord.", department: "adm" },
-            { id: 7, name: "Ricardo Alves", daysOff: [1, 8, 15, 22, 29], code: "RA07", role: "Sup.", department: "op" }
-        ];
-
-        let companyData = {
-            name: "Minha Empresa",
-            address: "Rua Exemplo, 123",
-            phone: "(11) 9999-9999",
-            email: "contato@empresa.com"
-        };
-
-        // --- CONFIG ---
+        // --- CONFIGURAÇÕES GLOBAIS ---
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let daysInMonth = 31;
         let isFilterActive = false;
         let isEditMode = false;
-        let nextEmployeeId = 8;
         let currentEmployeeFormSection = 'basic';
+        let db = null; // Referência ao banco de dados IndexedDB
 
         const monthNames = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
         const weekdayNames = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
@@ -494,25 +592,458 @@
         function isHoliday(day, month, year) { return holidays.some(h => h.day === day && h.month === month); }
         function getHolidayName(day, month, year) { const h = holidays.find(h => h.day === day && h.month === month); return h ? h.description : null; }
 
-        function initYearSelect() {
-            const yearSelect = document.getElementById('yearSelect');
-            yearSelect.innerHTML = '';
-            for (let year = 2020; year <= 2030; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                if (year === currentYear) option.selected = true;
-                yearSelect.appendChild(option);
-            }
-            document.getElementById('monthSelect').value = currentMonth;
+        // --- FUNÇÕES DE NOTIFICAÇÃO ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            const messageEl = document.getElementById('toastMessage');
+            
+            messageEl.textContent = message;
+            toast.className = 'toast-notification';
+            toast.classList.add(type);
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
-        function loadCompanyData() {
-            const saved = localStorage.getItem('companyData');
-            if (saved) companyData = JSON.parse(saved);
-            document.getElementById('companyNameDisplay').textContent = companyData.name;
-            let details = [companyData.address, companyData.phone, companyData.email].filter(Boolean).join(' • ');
-            document.getElementById('companyDetailsDisplay').textContent = details;
+        function updateDatabaseStatus(message, type = 'success') {
+            const statusEl = document.getElementById('databaseStatus');
+            const textEl = document.getElementById('databaseStatusText');
+            
+            textEl.textContent = message;
+            statusEl.className = 'database-status';
+            statusEl.classList.add(type);
+            
+            // Esconder após alguns segundos se for uma mensagem de sucesso
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.opacity = '0';
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                    }, 300);
+                }, 2000);
+            } else {
+                statusEl.style.display = 'flex';
+                statusEl.style.opacity = '1';
+            }
+        }
+
+        // --- INDEXEDDB ---
+        const DB_NAME = 'EscalaFolgasDB';
+        const DB_VERSION = 1;
+        const COMPANY_STORE = 'company';
+        const EMPLOYEES_STORE = 'employees';
+
+        function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = (event) => {
+                    console.error('Erro ao abrir o banco de dados:', event.target.error);
+                    updateDatabaseStatus('Erro ao conectar com IndexedDB', 'error');
+                    reject(event.target.error);
+                };
+                
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log('Banco de dados aberto com sucesso');
+                    updateDatabaseStatus('IndexedDB Conectado');
+                    
+                    // Carregar dados após a conexão
+                    loadCompanyData();
+                    loadEmployeesData().then(() => {
+                        initTable();
+                        resolve(db);
+                    });
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    // Criar object store para dados da empresa
+                    if (!db.objectStoreNames.contains(COMPANY_STORE)) {
+                        const companyStore = db.createObjectStore(COMPANY_STORE, { keyPath: 'id' });
+                        companyStore.createIndex('id', 'id', { unique: true });
+                        
+                        // Inserir dados padrão
+                        const defaultCompanyData = {
+                            id: 1,
+                            name: "Minha Empresa",
+                            address: "Rua Exemplo, 123",
+                            phone: "(11) 9999-9999",
+                            email: "contato@empresa.com"
+                        };
+                        companyStore.add(defaultCompanyData);
+                    }
+                    
+                    // Criar object store para funcionários
+                    if (!db.objectStoreNames.contains(EMPLOYEES_STORE)) {
+                        const employeesStore = db.createObjectStore(EMPLOYEES_STORE, { keyPath: 'id', autoIncrement: true });
+                        employeesStore.createIndex('id', 'id', { unique: true });
+                        employeesStore.createIndex('name', 'name', { unique: false });
+                        
+                        // Inserir dados iniciais se necessário
+                        const defaultEmployees = [
+                            { name: "João Silva", daysOff: [2, 9, 16, 23, 30], code: "JS01", role: "Analista", department: "adm" },
+                            { name: "Maria Santos", daysOff: [3, 10, 17, 24, 31], code: "MS02", role: "Gerente", department: "com" },
+                            { name: "Pedro Oliveira", daysOff: [4, 11, 18, 25], code: "PO03", role: "Técnico", department: "op" },
+                            { name: "Ana Costa", daysOff: [5, 12, 19, 26], code: "AC04", role: "Assistente", department: "rh" },
+                            { name: "Carlos Lima", daysOff: [6, 13, 20, 27], code: "CL05", role: "Dev", department: "ti" },
+                            { name: "Fernanda Souza", daysOff: [7, 14, 21, 28], code: "FS06", role: "Coord.", department: "adm" },
+                            { name: "Ricardo Alves", daysOff: [1, 8, 15, 22, 29], code: "RA07", role: "Sup.", department: "op" }
+                        ];
+                        
+                        defaultEmployees.forEach(employee => {
+                            employeesStore.add(employee);
+                        });
+                    }
+                };
+            });
+        }
+
+        // --- OPERAÇÕES COM DADOS DA EMPRESA ---
+        async function loadCompanyData() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Banco de dados não inicializado');
+                    return;
+                }
+                
+                const transaction = db.transaction([COMPANY_STORE], 'readonly');
+                const store = transaction.objectStore(COMPANY_STORE);
+                const request = store.get(1);
+                
+                request.onsuccess = (event) => {
+                    const companyData = event.target.result || {
+                        name: "Minha Empresa",
+                        address: "Rua Exemplo, 123",
+                        phone: "(11) 9999-9999",
+                        email: "contato@empresa.com"
+                    };
+                    
+                    document.getElementById('companyNameDisplay').textContent = companyData.name;
+                    let details = [companyData.address, companyData.phone, companyData.email].filter(Boolean).join(' • ');
+                    document.getElementById('companyDetailsDisplay').textContent = details;
+                    
+                    resolve(companyData);
+                };
+                
+                request.onerror = (event) => {
+                    console.error('Erro ao carregar dados da empresa:', event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        async function saveCompanyData(companyData) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Banco de dados não inicializado');
+                    return;
+                }
+                
+                const transaction = db.transaction([COMPANY_STORE], 'readwrite');
+                const store = transaction.objectStore(COMPANY_STORE);
+                
+                // Garantir que tenha um ID
+                companyData.id = 1;
+                
+                const request = store.put(companyData);
+                
+                request.onsuccess = () => {
+                    console.log('Dados da empresa salvos com sucesso');
+                    showToast('Dados da empresa salvos!');
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    console.error('Erro ao salvar dados da empresa:', event.target.error);
+                    showToast('Erro ao salvar dados da empresa', 'error');
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // --- OPERAÇÕES COM FUNCIONÁRIOS ---
+        let employeesData = [];
+
+        async function loadEmployeesData() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Banco de dados não inicializado');
+                    return;
+                }
+                
+                const transaction = db.transaction([EMPLOYEES_STORE], 'readonly');
+                const store = transaction.objectStore(EMPLOYEES_STORE);
+                const request = store.getAll();
+                
+                request.onsuccess = (event) => {
+                    employeesData = event.target.result || [];
+                    console.log(`Carregados ${employeesData.length} funcionários`);
+                    resolve(employeesData);
+                };
+                
+                request.onerror = (event) => {
+                    console.error('Erro ao carregar funcionários:', event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        async function saveEmployee(employeeData) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Banco de dados não inicializado');
+                    return;
+                }
+                
+                const transaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
+                const store = transaction.objectStore(EMPLOYEES_STORE);
+                
+                let request;
+                if (employeeData.id) {
+                    // Atualizar funcionário existente
+                    request = store.put(employeeData);
+                } else {
+                    // Adicionar novo funcionário
+                    request = store.add(employeeData);
+                }
+                
+                request.onsuccess = async () => {
+                    console.log('Funcionário salvo com sucesso');
+                    showToast('Funcionário salvo!');
+                    
+                    // Recarregar dados após salvar
+                    await loadEmployeesData();
+                    initTable();
+                    
+                    resolve(request.result); // Retorna o ID do funcionário
+                };
+                
+                request.onerror = (event) => {
+                    console.error('Erro ao salvar funcionário:', event.target.error);
+                    showToast('Erro ao salvar funcionário', 'error');
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        async function deleteEmployeeFromDB(id) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Banco de dados não inicializado');
+                    return;
+                }
+                
+                const transaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
+                const store = transaction.objectStore(EMPLOYEES_STORE);
+                const request = store.delete(id);
+                
+                request.onsuccess = async () => {
+                    console.log('Funcionário excluído com sucesso');
+                    showToast('Funcionário excluído!');
+                    
+                    // Recarregar dados após excluir
+                    await loadEmployeesData();
+                    initTable();
+                    
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    console.error('Erro ao excluir funcionário:', event.target.error);
+                    showToast('Erro ao excluir funcionário', 'error');
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        async function clearAllData() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject('Banco de dados não inicializado');
+                    return;
+                }
+                
+                // Limpar dados da empresa
+                const companyTransaction = db.transaction([COMPANY_STORE], 'readwrite');
+                const companyStore = companyTransaction.objectStore(COMPANY_STORE);
+                const companyClearRequest = companyStore.clear();
+                
+                companyClearRequest.onsuccess = () => {
+                    // Limpar funcionários
+                    const employeesTransaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
+                    const employeesStore = employeesTransaction.objectStore(EMPLOYEES_STORE);
+                    const employeesClearRequest = employeesStore.clear();
+                    
+                    employeesClearRequest.onsuccess = async () => {
+                        console.log('Todos os dados foram limpos');
+                        
+                        // Recarregar dados (que agora estarão vazios)
+                        await loadEmployeesData();
+                        await loadCompanyData();
+                        initTable();
+                        
+                        showToast('Todos os dados foram limpos!', 'warning');
+                        resolve();
+                    };
+                    
+                    employeesClearRequest.onerror = (event) => {
+                        console.error('Erro ao limpar funcionários:', event.target.error);
+                        reject(event.target.error);
+                    };
+                };
+                
+                companyClearRequest.onerror = (event) => {
+                    console.error('Erro ao limpar dados da empresa:', event.target.error);
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // --- BACKUP E RESTAURAÇÃO ---
+        async function exportBackup() {
+            try {
+                // Obter todos os dados do banco
+                const companyData = await new Promise((resolve, reject) => {
+                    const transaction = db.transaction([COMPANY_STORE], 'readonly');
+                    const store = transaction.objectStore(COMPANY_STORE);
+                    const request = store.get(1);
+                    
+                    request.onsuccess = (event) => resolve(event.target.result);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+                
+                const employeesData = await new Promise((resolve, reject) => {
+                    const transaction = db.transaction([EMPLOYEES_STORE], 'readonly');
+                    const store = transaction.objectStore(EMPLOYEES_STORE);
+                    const request = store.getAll();
+                    
+                    request.onsuccess = (event) => resolve(event.target.result);
+                    request.onerror = (event) => reject(event.target.error);
+                });
+                
+                // Criar objeto de backup
+                const backupData = {
+                    version: 1,
+                    timestamp: new Date().toISOString(),
+                    company: companyData,
+                    employees: employeesData,
+                    exportDate: new Date().toLocaleDateString('pt-BR'),
+                    exportTime: new Date().toLocaleTimeString('pt-BR')
+                };
+                
+                // Converter para JSON
+                const jsonData = JSON.stringify(backupData, null, 2);
+                
+                // Criar blob e link de download
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup_escala_folgas_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('Backup exportado com sucesso!');
+                return backupData;
+            } catch (error) {
+                console.error('Erro ao exportar backup:', error);
+                showToast('Erro ao exportar backup', 'error');
+                throw error;
+            }
+        }
+
+        async function importBackup(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = async (event) => {
+                    try {
+                        const backupData = JSON.parse(event.target.result);
+                        
+                        // Validar estrutura do backup
+                        if (!backupData.company || !backupData.employees) {
+                            throw new Error('Arquivo de backup inválido');
+                        }
+                        
+                        // Importar dados da empresa
+                        if (backupData.company) {
+                            const companyTransaction = db.transaction([COMPANY_STORE], 'readwrite');
+                            const companyStore = companyTransaction.objectStore(COMPANY_STORE);
+                            const companyClearRequest = companyStore.clear();
+                            
+                            companyClearRequest.onsuccess = () => {
+                                backupData.company.id = 1;
+                                const putRequest = companyStore.put(backupData.company);
+                                
+                                putRequest.onsuccess = async () => {
+                                    // Importar funcionários
+                                    const employeesTransaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
+                                    const employeesStore = employeesTransaction.objectStore(EMPLOYEES_STORE);
+                                    const employeesClearRequest = employeesStore.clear();
+                                    
+                                    employeesClearRequest.onsuccess = () => {
+                                        // Adicionar cada funcionário
+                                        const addPromises = backupData.employees.map(employee => {
+                                            return new Promise((resolveAdd, rejectAdd) => {
+                                                const addRequest = employeesStore.add(employee);
+                                                addRequest.onsuccess = () => resolveAdd();
+                                                addRequest.onerror = (e) => rejectAdd(e.target.error);
+                                            });
+                                        });
+                                        
+                                        Promise.all(addPromises).then(async () => {
+                                            // Recarregar dados
+                                            await loadEmployeesData();
+                                            await loadCompanyData();
+                                            initTable();
+                                            
+                                            showToast(`Backup importado com sucesso! ${backupData.employees.length} funcionários restaurados.`);
+                                            resolve();
+                                        }).catch(error => {
+                                            console.error('Erro ao importar funcionários:', error);
+                                            showToast('Erro ao importar funcionários do backup', 'error');
+                                            reject(error);
+                                        });
+                                    };
+                                    
+                                    employeesClearRequest.onerror = (e) => {
+                                        console.error('Erro ao limpar funcionários:', e.target.error);
+                                        reject(e.target.error);
+                                    };
+                                };
+                                
+                                putRequest.onerror = (e) => {
+                                    console.error('Erro ao importar dados da empresa:', e.target.error);
+                                    reject(e.target.error);
+                                };
+                            };
+                            
+                            companyClearRequest.onerror = (e) => {
+                                console.error('Erro ao limpar dados da empresa:', e.target.error);
+                                reject(e.target.error);
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Erro ao processar arquivo de backup:', error);
+                        showToast('Erro ao processar arquivo de backup', 'error');
+                        reject(error);
+                    }
+                };
+                
+                reader.onerror = (event) => {
+                    console.error('Erro ao ler arquivo:', event.target.error);
+                    showToast('Erro ao ler arquivo', 'error');
+                    reject(event.target.error);
+                };
+                
+                reader.readAsText(file);
+            });
         }
 
         // --- TABELA PRINCIPAL ---
@@ -567,7 +1098,7 @@
                 
                 for (let day = 1; day <= daysInMonth; day++) {
                     const td = document.createElement('td');
-                    const isDayOff = employee.daysOff.includes(day);
+                    const isDayOff = employee.daysOff && employee.daysOff.includes(day);
                     td.className = 'editable ' + (isDayOff ? 'off-day' : 'empty-cell');
                     td.textContent = isDayOff ? "F" : "";
                     
@@ -604,7 +1135,7 @@
             });
         }
 
-        function handleCellClick(e) {
+        async function handleCellClick(e) {
             if (!isEditMode) return;
             const cell = e.target;
             const empId = parseInt(cell.dataset.employeeId);
@@ -612,6 +1143,9 @@
             const emp = employeesData.find(e => e.id === empId);
             if (!emp) return;
 
+            // Garantir que daysOff exista
+            if (!emp.daysOff) emp.daysOff = [];
+            
             const idx = emp.daysOff.indexOf(day);
             if (idx === -1) {
                 emp.daysOff.push(day);
@@ -625,12 +1159,19 @@
                 cell.classList.remove('off-day');
                 cell.classList.add('empty-cell');
             }
+            
+            // Salvar alterações no banco de dados
+            try {
+                await saveEmployee(emp);
+            } catch (error) {
+                console.error('Erro ao salvar alteração da folga:', error);
+                showToast('Erro ao salvar alteração', 'error');
+            }
         }
 
         // --- MODAL FUNCIONARIO ---
         function openEmployeeModal(id = null, section = 'basic') {
             const modal = document.getElementById('employeeModal');
-            const form = document.getElementById('employeeForm');
             const deleteBtn = document.getElementById('deleteEmployeeBtn');
             
             if (id) {
@@ -645,10 +1186,15 @@
                 document.getElementById('employeeNotes').value = emp.notes || '';
                 document.getElementById('employeeId').value = emp.id;
                 deleteBtn.style.display = 'block';
-                deleteBtn.onclick = () => { if(confirm('Excluir funcionário?')) { deleteEmployee(id); modal.style.display = 'none'; }};
+                deleteBtn.onclick = () => { 
+                    if(confirm('Excluir funcionário?')) { 
+                        deleteEmployeeFromDB(id);
+                        modal.style.display = 'none';
+                    }
+                };
             } else {
                 document.getElementById('employeeModalTitle').textContent = "Novo Funcionário";
-                form.reset();
+                document.getElementById('employeeForm').reset();
                 document.getElementById('employeeId').value = '';
                 deleteBtn.style.display = 'none';
             }
@@ -656,11 +1202,6 @@
             switchEmployeeFormSection(section);
             if (section === 'days') generateDaysCheckboxes(id);
             modal.style.display = 'flex';
-        }
-
-        function deleteEmployee(id) {
-            employeesData = employeesData.filter(e => e.id !== id);
-            initTable();
         }
 
         function switchEmployeeFormSection(section) {
@@ -690,7 +1231,7 @@
                 const chk = document.createElement('input');
                 chk.type = 'checkbox';
                 chk.value = day;
-                chk.checked = emp ? emp.daysOff.includes(day) : false;
+                chk.checked = emp && emp.daysOff ? emp.daysOff.includes(day) : false;
                 
                 if (chk.checked) {
                     counts.total++;
@@ -720,7 +1261,7 @@
             updateCounts();
         }
 
-        document.getElementById('employeeForm').addEventListener('submit', (e) => {
+        document.getElementById('employeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('employeeId').value;
             const data = {
@@ -733,31 +1274,34 @@
                 notes: document.getElementById('employeeNotes').value
             };
             
+            if (id) {
+                data.id = parseInt(id);
+                // Manter os dias de folga existentes se não estivermos na seção de dias
+                const existingEmp = employeesData.find(e => e.id === data.id);
+                if (existingEmp && currentEmployeeFormSection !== 'days') {
+                    data.daysOff = existingEmp.daysOff || [];
+                }
+            }
+            
             if (currentEmployeeFormSection === 'days') {
                 const chks = document.querySelectorAll('#daysCheckboxContainer input:checked');
                 data.daysOff = Array.from(chks).map(c => parseInt(c.value));
             }
-
-            if (id) {
-                const idx = employeesData.findIndex(e => e.id == id);
-                if (currentEmployeeFormSection !== 'days') data.daysOff = employeesData[idx].daysOff;
-                employeesData[idx] = { ...employeesData[idx], ...data };
-            } else {
-                data.id = nextEmployeeId++;
-                if (!data.daysOff) data.daysOff = [];
-                employeesData.push(data);
-            }
             
-            initTable();
-            document.getElementById('employeeModal').style.display = 'none';
+            try {
+                await saveEmployee(data);
+                document.getElementById('employeeModal').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao salvar funcionário:', error);
+            }
         });
 
         // --- IMPRESSÃO AVANÇADA COLORIDA ---
         function generatePrintHTML() {
             let html = `
                 <div class="print-header">
-                    <div class="print-company-name">${companyData.name}</div>
-                    <div class="print-company-details">${companyData.address} • ${companyData.phone}</div>
+                    <div class="print-company-name">${document.getElementById('companyNameDisplay').textContent}</div>
+                    <div class="print-company-details">${document.getElementById('companyDetailsDisplay').textContent}</div>
                     <div class="print-title">ESCALA DE FOLGAS</div>
                     <div class="print-subtitle">${monthNames[currentMonth]} ${currentYear}</div>
                 </div>
@@ -774,7 +1318,7 @@
             employeesData.forEach(e => {
                 html += `<tr><td style="font-weight:bold; text-align:left; padding-left:5px">${e.name}</td>`;
                 for(let d=1; d<=daysInMonth; d++) {
-                    const isOff = e.daysOff.includes(d);
+                    const isOff = e.daysOff && e.daysOff.includes(d);
                     const dow = getDayOfWeek(d, currentMonth, currentYear);
                     let cls = '';
                     if (isOff) cls = 'off-day';
@@ -830,7 +1374,11 @@
 
         function applyDayOffFilter() {
             const activeDays = new Set();
-            employeesData.forEach(e => e.daysOff.forEach(d => activeDays.add(d)));
+            employeesData.forEach(e => {
+                if (e.daysOff) {
+                    e.daysOff.forEach(d => activeDays.add(d));
+                }
+            });
             for(let d=1; d<=daysInMonth; d++) {
                 if(!activeDays.has(d)) {
                     document.querySelectorAll(`[data-day="${d}"]`).forEach(el => el.style.display = 'none');
@@ -840,7 +1388,8 @@
 
         document.getElementById('addEmployeeBtn').onclick = () => openEmployeeModal();
         document.getElementById('closeEmployeeModal').onclick = () => document.getElementById('employeeModal').style.display = 'none';
-        document.getElementById('companyConfigBtn').onclick = () => { 
+        document.getElementById('companyConfigBtn').onclick = async () => { 
+            const companyData = await loadCompanyData();
             document.getElementById('companyNameInput').value = companyData.name;
             document.getElementById('companyAddress').value = companyData.address;
             document.getElementById('companyPhone').value = companyData.phone;
@@ -850,16 +1399,27 @@
         document.getElementById('closeCompanyModal').onclick = () => document.getElementById('companyModal').style.display = 'none';
         document.getElementById('advancedPrintBtn').onclick = () => document.getElementById('printModal').style.display = 'flex';
         document.getElementById('closePrintModal').onclick = () => document.getElementById('printModal').style.display = 'none';
+        document.getElementById('clearDatabaseBtn').onclick = () => {
+            document.getElementById('clearDatabaseModal').style.display = 'flex';
+        };
+        document.getElementById('closeClearDatabaseModal').onclick = () => document.getElementById('clearDatabaseModal').style.display = 'none';
 
-        document.getElementById('companyForm').onsubmit = (e) => {
+        document.getElementById('companyForm').onsubmit = async (e) => {
             e.preventDefault();
-            companyData.name = document.getElementById('companyNameInput').value;
-            companyData.address = document.getElementById('companyAddress').value;
-            companyData.phone = document.getElementById('companyPhone').value;
-            companyData.email = document.getElementById('companyEmail').value;
-            localStorage.setItem('companyData', JSON.stringify(companyData));
-            loadCompanyData();
-            document.getElementById('companyModal').style.display = 'none';
+            const companyData = {
+                name: document.getElementById('companyNameInput').value,
+                address: document.getElementById('companyAddress').value,
+                phone: document.getElementById('companyPhone').value,
+                email: document.getElementById('companyEmail').value
+            };
+            
+            try {
+                await saveCompanyData(companyData);
+                await loadCompanyData();
+                document.getElementById('companyModal').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao salvar dados da empresa:', error);
+            }
         };
 
         document.querySelectorAll('.employee-option').forEach(opt => {
@@ -870,7 +1430,59 @@
             });
         });
 
-        // EXECUTAR IMPRESSÃO (AGORA CHAMADO "VISUALIZAR E IMPRIMIR")
+        // BACKUP E RESTAURAÇÃO
+        document.getElementById('exportBackupBtn').onclick = () => {
+            exportBackup();
+        };
+
+        document.getElementById('importBackupBtn').onclick = () => {
+            document.getElementById('backupFileInput').click();
+        };
+
+        document.getElementById('backupFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!confirm('Importar backup substituirá todos os dados atuais. Continuar?')) {
+                e.target.value = '';
+                return;
+            }
+            
+            try {
+                await importBackup(file);
+                e.target.value = '';
+            } catch (error) {
+                console.error('Erro ao importar backup:', error);
+                e.target.value = '';
+            }
+        });
+
+        // LIMPAR DADOS
+        document.getElementById('confirmClearText').addEventListener('input', function() {
+            const confirmBtn = document.getElementById('confirmClearBtn');
+            confirmBtn.disabled = this.value.toUpperCase() !== 'LIMPAR';
+        });
+
+        document.getElementById('confirmClearBtn').onclick = async () => {
+            if (document.getElementById('confirmClearText').value.toUpperCase() !== 'LIMPAR') {
+                return;
+            }
+            
+            if (!confirm('Tem certeza que deseja apagar TODOS os dados? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                await clearAllData();
+                document.getElementById('clearDatabaseModal').style.display = 'none';
+                document.getElementById('confirmClearText').value = '';
+                document.getElementById('confirmClearBtn').disabled = true;
+            } catch (error) {
+                console.error('Erro ao limpar dados:', error);
+            }
+        };
+
+        // EXECUTAR IMPRESSÃO
         document.getElementById('executePrint').onclick = () => {
             const content = generatePrintHTML();
             const w = window.open('', '_blank');
@@ -975,7 +1587,7 @@
                 w.focus();
                 w.print();
                 
-                // Fecha a janela após um tempo (opcional)
+                // Fecha a janela após um tempo
                 setTimeout(() => {
                     if (!w.closed) {
                         w.close();
@@ -986,20 +1598,51 @@
 
         document.getElementById('resetBtn').onclick = () => {
             if(confirm('Deseja realmente resetar o sistema? Todos os dados não salvos serão perdidos.')) {
-                localStorage.clear();
                 location.reload();
             }
         };
 
         const monthSelect = document.getElementById('monthSelect');
         const yearSelect = document.getElementById('yearSelect');
+        
+        function initYearSelect() {
+            const yearSelect = document.getElementById('yearSelect');
+            yearSelect.innerHTML = '';
+            for (let year = 2020; year <= 2030; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === currentYear) option.selected = true;
+                yearSelect.appendChild(option);
+            }
+            document.getElementById('monthSelect').value = currentMonth;
+        }
+        
         monthSelect.onchange = () => { currentMonth = parseInt(monthSelect.value); initTable(); };
         yearSelect.onchange = () => { currentYear = parseInt(yearSelect.value); initTable(); };
 
-        // INIT
-        loadCompanyData();
-        initYearSelect();
-        initTable();
+        // INICIALIZAÇÃO DO SISTEMA
+        async function initApp() {
+            try {
+                // Inicializar banco de dados IndexedDB
+                await initDatabase();
+                
+                // Configurar seletor de ano/mês
+                initYearSelect();
+                
+                // Mostrar mensagem de sucesso
+                showToast('Sistema carregado com sucesso!');
+                
+                console.log('Sistema inicializado com IndexedDB');
+            } catch (error) {
+                console.error('Erro ao inicializar o sistema:', error);
+                showToast('Erro ao inicializar o sistema', 'error');
+                updateDatabaseStatus('Falha na conexão com IndexedDB', 'error');
+            }
+        }
+
+        // Iniciar a aplicação quando a página carregar
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
