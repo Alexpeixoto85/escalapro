@@ -1,10 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Escala de Folgas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Escala de Folgas - Mobile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -19,58 +22,197 @@
             --offday-color: #e8f4fd;
             --weekend-color: #fff8e1;
             --holiday-color: #ffebee;
-            --border-radius: 8px;
+            --border-radius: 12px;
             --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --transition: all 0.3s ease;
             --border-color: #3498db;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        body { background-color: #f0f5ff; color: var(--dark-color); line-height: 1.6; padding: 20px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f0f5ff; 
+            color: var(--dark-color); 
+            line-height: 1.6; 
+            padding: 0;
+            overflow-x: hidden;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
+        }
 
-        .container { max-width: 1400px; margin: 0 auto; }
-
-        header {
-            text-align: center; padding: 20px 0; margin-bottom: 25px;
+        /* Header fixo para mobile */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             background: linear-gradient(135deg, var(--primary-color), #2980b9);
-            border-radius: var(--border-radius); color: white;
-            box-shadow: var(--box-shadow); display: flex; flex-direction: column;
-            align-items: center; border: 2px solid var(--border-color);
+            color: white;
+            padding: 12px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: calc(12px + var(--safe-area-top));
+            border-bottom: 2px solid var(--border-color);
         }
 
-        .company-header { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 30px; margin-bottom: 15px; }
-        .company-info { text-align: left; }
-        .company-info h1 { font-size: 2rem; margin-bottom: 5px; }
-        .company-details { font-size: 0.9rem; opacity: 0.9; }
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        header h2 { font-size: 1.8rem; margin-bottom: 8px; font-weight: 300; }
+        .mobile-header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .main-content {
+            padding: 80px 15px 80px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
 
         .card {
-            background: white; border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow); padding: 25px; margin-bottom: 25px;
-            transition: var(--transition); border: 2px solid var(--border-color);
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+            border: 1px solid #e0e0e0;
         }
 
-        .controls {
-            display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between;
-            align-items: center; margin-bottom: 20px; padding-bottom: 20px;
-            border-bottom: 1px solid #eaeaea;
+        /* Menu inferior fixo */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 5px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            border-top: 1px solid #e0e0e0;
+            padding-bottom: calc(10px + var(--safe-area-bottom));
         }
 
-        .controls-left, .controls-right { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-
-        .month-year-selector {
-            display: flex; gap: 10px; align-items: center; background-color: white;
-            padding: 8px 15px; border-radius: 6px; border: 1px solid #ddd;
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--gray-color);
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: var(--transition);
+            min-width: 60px;
         }
 
-        .month-year-selector select { padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background-color: white; cursor: pointer; }
+        .nav-item.active {
+            color: var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .nav-item span {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Controles otimizados para mobile */
+        .mobile-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .month-year-selector-mobile {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background-color: white;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+        }
+
+        .month-year-selector-mobile select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.95rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 35px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
 
         .btn {
-            padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;
-            font-weight: 600; display: inline-flex; align-items: center; gap: 8px;
-            transition: var(--transition); font-size: 0.95rem; border: 1px solid transparent;
+            padding: 14px 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            border: 1px solid transparent;
+            text-align: center;
         }
 
         .btn-primary { background-color: var(--primary-color); color: white; border-color: #2980b9; }
@@ -78,28 +220,76 @@
         .btn-success { background-color: var(--success-color); color: white; border-color: #219653; }
         .btn-success:hover { background-color: #219653; transform: translateY(-2px); }
         .btn-warning { background-color: var(--warning-color); color: var(--dark-color); border-color: #e67e22; }
-        .btn-warning:hover { background-color: #e67e22; transform: translateY(-2px); }
+        .btn-warning:hover { background-color: #e67e22; color: white; transform: translateY(-2px); }
         .btn-danger { background-color: var(--danger-color); color: white; border-color: #c0392b; }
         .btn-danger:hover { background-color: #c0392b; transform: translateY(-2px); }
         .btn-info { background-color: #17a2b8; color: white; border-color: #138496; }
         .btn-info:hover { background-color: #138496; transform: translateY(-2px); }
         .btn-secondary { background-color: var(--gray-color); color: white; border-color: #6c757d; }
         .btn-secondary:hover { background-color: #6c757d; transform: translateY(-2px); }
-        .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+        .btn-sm { padding: 8px 12px; font-size: 0.8rem; }
 
-        .table-container { overflow-x: auto; margin-top: 20px; border-radius: var(--border-radius); border: 2px solid var(--border-color); background: white; position: relative; }
-        .table-wrapper { overflow-x: auto; max-height: 600px; overflow-y: auto; position: relative; }
+        /* Tabela otimizada para mobile */
+        .table-container-mobile {
+            overflow-x: auto;
+            margin-top: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background: white;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
 
-        table { width: 100%; border-collapse: collapse; min-width: 1200px; table-layout: fixed; }
-        th, td { padding: 10px 5px; text-align: center; border: 1px solid var(--border-color); font-size: 0.9rem; position: relative; }
-        th { background-color: var(--primary-color); color: white; font-weight: 600; position: sticky; top: 0; white-space: nowrap; }
+        .table-wrapper-mobile {
+            overflow-x: auto;
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 8px 4px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            font-size: 0.8rem;
+            position: relative;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            padding: 10px 5px;
+        }
 
         th:first-child, td:first-child {
-            position: sticky; left: 0; z-index: 10; background-color: white;
-            min-width: 180px; max-width: 180px; width: 180px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: white;
+            min-width: 120px;
+            max-width: 120px;
+            width: 120px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
-        th:first-child { background-color: var(--primary-color); color: white; z-index: 20; }
+
+        th:first-child {
+            background-color: var(--primary-color);
+            color: white;
+            z-index: 20;
+            min-width: 120px;
+        }
 
         tr:nth-child(even) td:first-child { background-color: #f9f9f9; }
         tr:nth-child(even):hover td:first-child { background-color: #f0f7ff; }
@@ -108,330 +298,476 @@
         tr:nth-child(even) td:not(:first-child) { background-color: #f9f9f9; }
         tr:hover td:not(:first-child) { background-color: #f0f7ff; }
 
-        .editable { cursor: pointer; transition: var(--transition); position: relative; min-height: 40px; }
-        .editable:hover { background-color: var(--offday-color) !important; }
-        .off-day { background-color: var(--offday-color); font-weight: 600; color: var(--primary-color); }
-        .weekend { background-color: var(--weekend-color); }
-        .holiday { background-color: var(--holiday-color); }
+        .editable {
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            min-height: 35px;
+            touch-action: manipulation;
+        }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background-color: white; padding: 30px; border-radius: var(--border-radius); width: 90%; max-width: 600px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); max-height: 90vh; overflow-y: auto; border: 2px solid var(--border-color); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0; }
-        .close-modal { background: none; border: none; font-size: 1.5rem; color: var(--gray-color); cursor: pointer; }
+        .editable:active {
+            background-color: var(--offday-color) !important;
+            transform: scale(0.95);
+        }
 
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark-color); }
-        .form-control { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 1rem; }
+        .off-day {
+            background-color: var(--offday-color);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
 
-        .footer-info { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: var(--gray-color); font-size: 0.9rem; }
+        .weekend {
+            background-color: var(--weekend-color);
+        }
 
-        .color-indicator { display: flex; align-items: center; gap: 15px; font-size: 0.85rem; margin-top: 10px; flex-wrap: wrap; }
-        .color-indicator-item { display: flex; align-items: center; gap: 8px; }
-        .color-box { width: 20px; height: 20px; border-radius: 4px; border: 1px solid #ddd; }
+        .holiday {
+            background-color: var(--holiday-color);
+        }
+
+        .employee-name-mobile {
+            font-weight: 600;
+            color: var(--dark-color);
+            text-align: left;
+            padding-left: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-size: 0.85rem;
+        }
+
+        .employee-name-mobile span {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        /* Modal mobile */
+        .modal-mobile {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 20px 15px;
+            padding-top: calc(20px + var(--safe-area-top));
+        }
+
+        .modal-content-mobile {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        .modal-header-mobile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .close-modal-mobile {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--gray-color);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-modal-mobile:active {
+            background-color: #f5f5f5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        /* Indicadores de cor */
+        .color-indicator-mobile {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+
+        .color-indicator-item-mobile {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+
+        .color-box-mobile {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
         .color-offday { background-color: var(--offday-color); }
         .color-weekend { background-color: var(--weekend-color); }
         .color-holiday { background-color: var(--holiday-color); }
 
-        .edit-mode-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; background-color: #e7f3ff; border-radius: 20px; margin-left: 10px; font-size: 0.9rem; font-weight: 500; border: 1px solid var(--border-color); }
-        .edit-mode-active { background-color: #d4edda; color: #155724; }
+        /* Lista de funcionários mobile */
+        .employee-list-mobile {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e0e0;
+        }
 
-        .employee-name { font-weight: 600; color: var(--dark-color); text-align: left; padding-left: 10px; display: flex; align-items: center; justify-content: flex-start; }
-        .month-header { background-color: #2c3e50 !important; color: white; font-size: 1.1rem; }
-        .func-header { background-color: #2c3e50 !important; color: white; font-size: 1.1rem; }
-        .empty-cell { background-color: #f8f9fa; }
-
-        .employee-list { margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
-        .employee-list h3 { margin-bottom: 8px; font-size: 1.1rem; color: var(--primary-color); }
-        .employee-list ul { list-style-type: none; display: flex; flex-wrap: wrap; gap: 8px; }
-        .employee-list li { background-color: white; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; width: auto; flex-grow: 1; min-width: 200px; }
-        .employee-list-item-content { display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.85rem; }
-        
-        .weekday-header { background-color: #3a506b !important; font-size: 0.8rem; padding: 5px 2px; }
-        .filter-active { background-color: #17a2b8 !important; }
-        .day-number { font-size: 0.95rem; font-weight: bold; display: block; }
-        .days-checkbox-container { max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #f9f9f9; }
-        .day-checkbox-item { display: flex; align-items: center; margin-bottom: 5px; padding: 5px; border-radius: 4px; background-color: white; border: 1px solid #eee; font-size: 0.9rem; }
-        .day-checkbox-item.weekend { background-color: #fff8e1; border-color: #ffecb3; }
-        .day-checkbox-item.holiday { background-color: var(--holiday-color); border-color: #ffcdd2; }
-
-        .database-status { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            background-color: #2ecc71; 
-            color: white; 
-            padding: 10px 15px; 
-            border-radius: 6px; 
-            font-size: 0.85rem;
+        .employee-list-mobile h3 {
+            margin-bottom: 12px;
+            font-size: 1rem;
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 999;
-            transition: all 0.3s ease;
         }
 
-        .database-status.error { background-color: #e74c3c; }
-        .database-status.warning { background-color: #f39c12; }
-
-        .backup-section { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background-color: #f8f9fa; 
-            border-radius: var(--border-radius); 
-            border: 1px solid var(--border-color);
-        }
-        
-        .backup-section h3 { 
-            margin-bottom: 10px; 
-            color: var(--primary-color); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
         }
 
-        .backup-actions { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 10px; 
+        .employee-card {
+            background-color: white;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            transition: var(--transition);
         }
 
-        .toast-notification {
+        .employee-card:active {
+            transform: scale(0.98);
+            background-color: #f0f7ff;
+        }
+
+        .employee-card-name {
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .employee-card-details {
+            font-size: 0.75rem;
+            color: var(--gray-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Tabs mobile */
+        .tabs-mobile {
+            display: flex;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab-mobile {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--gray-color);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .tab-mobile.active {
+            background-color: white;
+            color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Toast mobile */
+        .toast-mobile {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
             background-color: #2ecc71;
             color: white;
-            padding: 15px 20px;
+            padding: 12px 20px;
             border-radius: var(--border-radius);
             box-shadow: 0 6px 16px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             gap: 10px;
             z-index: 9999;
-            transform: translateX(150%);
             transition: transform 0.4s ease;
+            max-width: 90%;
+            width: auto;
         }
 
-        .toast-notification.show {
-            transform: translateX(0);
+        .toast-mobile.show {
+            transform: translateX(-50%) translateY(0);
         }
 
-        .toast-notification.error {
+        .toast-mobile.error {
             background-color: #e74c3c;
         }
 
-        .toast-notification.warning {
+        .toast-mobile.warning {
             background-color: #f39c12;
         }
 
-        /* --- ESTILOS DE IMPRESSÃO --- */
-        @media print {
-            @page {
-                size: landscape;
-                margin: 5mm;
-            }
+        /* Status do banco de dados mobile */
+        .database-status-mobile {
+            position: fixed;
+            bottom: 70px;
+            right: 15px;
+            background-color: #2ecc71;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 998;
+            transition: all 0.3s ease;
+            max-width: 200px;
+        }
 
-            body {
-                background-color: white;
-                padding: 0;
-                font-family: 'Arial', sans-serif;
-                zoom: 70%;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            /* Ocultar interface */
-            .controls, .footer-info, .color-indicator, .edit-mode-indicator, 
-            .employee-list, .header-actions button, .backup-section,
-            .month-year-selector, .btn:not(#advancedPrintBtn),
-            .card, .container > header, .database-status {
+        .database-status-mobile.error {
+            background-color: #e74c3c;
+        }
+
+        .database-status-mobile.warning {
+            background-color: #f39c12;
+        }
+
+        /* Gestos e interações */
+        .swipe-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: var(--gray-color);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* Ajustes para impressão */
+        @media print {
+            .mobile-header, .mobile-nav, .database-status-mobile, .btn {
                 display: none !important;
             }
-
-            /* Container de visualização de impressão visível */
-            #printPreviewContainer {
-                display: block !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
             
-            /* Tabela de impressão */
-            #printTable {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 11px;
-                border: 1px solid #000 !important;
-            }
-            
-            #printTable th, #printTable td {
-                padding: 4px 2px;
-                border: 1px solid #000 !important;
-                text-align: center;
-                vertical-align: middle;
-            }
-            
-            #printTable th {
-                background-color: var(--primary-color) !important;
-                color: white !important;
-            }
-            
-            /* FORÇAR CORES NA IMPRESSÃO */
-            #printTable .off-day { 
-                background-color: #e8f4fd !important; 
-                color: #3498db !important; 
-                font-weight: bold; 
-            }
-            #printTable .weekend { 
-                background-color: #fff8e1 !important; 
-            }
-            #printTable .holiday { 
-                background-color: #ffebee !important; 
-            }
-            
-            .print-header {
-                text-align: center; 
-                margin-bottom: 10px; 
-                padding-bottom: 5px;
-                border-bottom: 2px solid var(--primary-color);
-                page-break-after: avoid;
-            }
-            .print-company-name { 
-                font-size: 20px; 
-                color: #000; 
-                font-weight: bold; 
-            }
-            .print-company-details {
-                font-size: 12px;
-                margin: 5px 0;
-            }
-            .print-title { 
-                font-size: 16px; 
-                color: var(--primary-color); 
-                text-transform: uppercase; 
-                margin-top: 5px; 
-                font-weight: bold; 
-            }
-            .print-subtitle {
-                font-size: 14px;
-                margin-top: 3px;
-            }
-            .print-footer { 
-                margin-top: 10px; 
-                border-top: 1px solid #000; 
-                font-size: 9px; 
-                text-align: center; 
-                page-break-before: avoid;
+            .main-content {
+                padding: 0;
+                margin: 0;
             }
         }
 
-        /* Modal Internals */
-        .employee-form-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .employee-option { background-color: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; cursor: pointer; text-align: center; }
-        .employee-option.active { background-color: #e8f4fd; border-color: var(--primary-color); }
-        .employee-option i { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 5px; }
-        .employee-option h4 { font-size: 0.9rem; margin-bottom: 0; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .form-row .form-group { flex: 1; margin-bottom: 0; }
-        .employee-days-summary { background-color: #f8f9fa; padding: 10px; margin-top: 10px; border: 1px solid #e0e0e0; }
-        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .summary-item { display: flex; flex-direction: column; align-items: center; padding: 5px; background: white; border: 1px solid #ddd; }
-        .summary-label { font-size: 0.75rem; }
-        .summary-value { font-weight: bold; color: var(--primary-color); }
-        .employee-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); margin: 0 auto 10px; background-color: #f0f5ff; color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
-        .photo-upload { text-align: center; margin-bottom: 15px; }
-        .photo-upload input[type="file"] { display: none; }
-        .photo-upload label { cursor: pointer; padding: 5px 10px; background-color: var(--primary-color); color: white; border-radius: 4px; font-size: 0.8rem; }
+        /* Ajustes para diferentes tamanhos de tela */
+        @media (max-width: 480px) {
+            .employee-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-header h1 {
+                font-size: 1.1rem;
+            }
+            
+            th:first-child, td:first-child {
+                min-width: 100px;
+                max-width: 100px;
+                width: 100px;
+            }
+        }
 
-        .history-section { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background-color: #f8f9fa; 
-            border-radius: var(--border-radius); 
-            border: 1px solid var(--border-color);
+        @media (max-width: 360px) {
+            .employee-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item {
+                min-width: 50px;
+            }
         }
-        
-        .history-section h3 { 
-            margin-bottom: 10px; 
-            color: var(--primary-color); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .history-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
         }
-        
-        .history-month {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 10px;
-            font-size: 0.85rem;
-        }
-        
-        .history-month-header {
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 5px;
+
+        /* Pull to refresh */
+        .pull-to-refresh {
+            position: fixed;
+            top: -50px;
+            left: 0;
+            right: 0;
+            height: 50px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            color: white;
+            transition: transform 0.3s ease;
+            z-index: 999;
         }
-        
-        .history-days-list {
+
+        /* Loader */
+        .loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .loader.active {
             display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            margin-top: 5px;
         }
-        
-        .history-day {
-            background-color: var(--offday-color);
-            color: var(--primary-color);
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-size: 0.8rem;
-            font-weight: bold;
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        
-        .history-empty {
-            color: var(--gray-color);
-            font-style: italic;
-            font-size: 0.8rem;
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="company-header">
-                <div class="company-info">
-                    <h1 id="companyNameDisplay">Nome da Empresa</h1>
-                    <div class="company-details">
-                        <span id="companyDetailsDisplay">Endereço • Telefone • Email</span>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-info" id="companyConfigBtn">
-                        <i class="fas fa-building"></i> Configurar Empresa
-                    </button>
-                </div>
-            </div>
-            <h2><i class="fas fa-calendar-check"></i> Sistema de Escala de Folgas</h2>
-        </header>
+    <!-- Header Mobile Fixo -->
+    <div class="mobile-header">
+        <h1 id="mobileCompanyName">Escala de Folgas</h1>
+        <div class="mobile-header-actions">
+            <button class="header-btn" id="mobileMenuBtn" title="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <button class="header-btn" id="mobilePrintBtn" title="Imprimir">
+                <i class="fas fa-print"></i>
+            </button>
+        </div>
+    </div>
 
-        <div class="card">
-            <div class="controls">
-                <div class="controls-left">
-                    <div class="month-year-selector">
-                        <label for="monthSelect">Mês:</label>
-                        <select id="monthSelect">
+    <!-- Menu Mobile Fixo Inferior -->
+    <nav class="mobile-nav">
+        <a href="#" class="nav-item active" data-tab="calendar">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Escala</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="employees">
+            <i class="fas fa-users"></i>
+            <span>Funcionários</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="reports">
+            <i class="fas fa-chart-bar"></i>
+            <span>Relatórios</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="settings">
+            <i class="fas fa-cog"></i>
+            <span>Configurações</span>
+        </a>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        <!-- Aba Escala (Padrão) -->
+        <div id="calendarTab" class="tab-content fade-in">
+            <div class="card">
+                <div class="mobile-controls">
+                    <div class="month-year-selector-mobile">
+                        <select id="monthSelectMobile">
                             <option value="0">Janeiro</option>
                             <option value="1">Fevereiro</option>
                             <option value="2">Março</option>
@@ -445,259 +781,374 @@
                             <option value="10">Novembro</option>
                             <option value="11" selected>Dezembro</option>
                         </select>
-                        <label for="yearSelect">Ano:</label>
-                        <select id="yearSelect"></select>
+                        <select id="yearSelectMobile"></select>
                     </div>
-                    
-                    <button class="btn btn-primary" id="editScaleBtn"><i class="fas fa-edit"></i> Editar Escala</button>
-                    <button class="btn btn-success" id="addEmployeeBtn"><i class="fas fa-user-plus"></i> Adicionar Func.</button>
-                    <button class="btn btn-info" id="filterOffDaysBtn"><i class="fas fa-filter"></i> Filtrar Folgas</button>
-                    <button class="btn btn-warning" id="resetBtn"><i class="fas fa-redo"></i> Redefinir</button>
-                </div>
-                <div class="controls-right">
-                    <button class="btn btn-info" id="advancedPrintBtn"><i class="fas fa-print"></i> Impressão Avançada</button>
-                </div>
-            </div>
 
-            <div class="backup-section">
-                <h3><i class="fas fa-database"></i> Backup e Restauração</h3>
-                <div class="backup-actions">
-                    <button class="btn btn-secondary" id="exportBackupBtn"><i class="fas fa-file-export"></i> Exportar Backup</button>
-                    <button class="btn btn-secondary" id="importBackupBtn"><i class="fas fa-file-import"></i> Importar Backup</button>
-                    <input type="file" id="backupFileInput" accept=".json" style="display: none;">
-                    <button class="btn btn-info" id="clearDatabaseBtn"><i class="fas fa-trash-alt"></i> Limpar Dados</button>
-                </div>
-            </div>
-
-            <div class="color-indicator">
-                <div class="color-indicator-item"><div class="color-box color-offday"></div><span>Folga</span></div>
-                <div class="color-indicator-item"><div class="color-box color-weekend"></div><span>Fim de semana</span></div>
-                <div class="color-indicator-item"><div class="color-box color-holiday"></div><span>Feriado</span></div>
-            </div>
-
-            <div id="editModeIndicator" class="edit-mode-indicator" style="display: none;">
-                <i class="fas fa-pencil-alt"></i><span>Modo de edição ativo</span>
-            </div>
-            <div id="filterModeIndicator" class="edit-mode-indicator" style="display: none; background-color: #d1ecf1; color: #0c5460;">
-                <i class="fas fa-filter"></i><span>Filtro ativo</span>
-            </div>
-
-            <div class="employee-list">
-                <h3><i class="fas fa-users"></i> Funcionários (Clique no nome na tabela para editar)</h3>
-                <ul id="employeeList"></ul>
-            </div>
-
-            <div class="table-container">
-                <div class="table-wrapper">
-                    <table id="scaleTable">
-                        <thead id="tableHeader"></thead>
-                        <tbody id="scaleBody"></tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="history-section" id="historySection" style="display: none;">
-                <h3><i class="fas fa-history"></i> Histórico de Folgas</h3>
-                <div id="historyContent"></div>
-            </div>
-        </div>
-
-        <div class="footer-info">
-            <p>Clique no nome do funcionário para editar seus dados. Clique nas células para marcar folga.</p>
-            <p>As folgas são armazenadas por mês/ano e mantidas no histórico do funcionário.</p>
-        </div>
-    </div>
-
-    <div class="modal" id="employeeModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="employeeModalTitle">Gerenciar Funcionário</h3>
-                <button class="close-modal" id="closeEmployeeModal">&times;</button>
-            </div>
-            <div class="employee-form-options" id="employeeFormOptions">
-                <div class="employee-option active" data-form="basic"><i class="fas fa-user"></i><h4>Dados</h4></div>
-                <div class="employee-option" data-form="days"><i class="fas fa-calendar-alt"></i><h4>Folgas</h4></div>
-                <div class="employee-option" data-form="history"><i class="fas fa-history"></i><h4>Histórico</h4></div>
-                <div class="employee-option" data-form="additional"><i class="fas fa-info-circle"></i><h4>Extras</h4></div>
-            </div>
-            <form id="employeeForm">
-                <div id="basicForm" class="employee-form-section">
-                    <div class="photo-upload">
-                        <div class="employee-photo" id="employeePhotoPreview"><i class="fas fa-user"></i></div>
-                        <input type="file" id="employeePhoto" accept="image/*">
-                        <label for="employeePhoto">Alterar Foto</label>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Nome:</label><input type="text" id="employeeName" class="form-control" required></div>
-                        <div class="form-group"><label>Código:</label><input type="text" id="employeeCode" class="form-control"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group"><label>Cargo:</label><input type="text" id="employeeRole" class="form-control"></div>
-                        <div class="form-group">
-                            <label>Depto:</label>
-                            <select id="employeeDepartment" class="form-control">
-                                <option value="">Selecione...</option>
-                                <option value="adm">Adm</option>
-                                <option value="op">Op</option>
-                                <option value="com">Com</option>
-                                <option value="rh">RH</option>
-                                <option value="ti">TI</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div id="daysForm" class="employee-form-section" style="display: none;">
-                    <div class="form-group">
-                        <label>Dias de folga para <span id="currentMonthYearDisplay"></span>:</label>
-                        <div id="daysCheckboxContainer" class="days-checkbox-container"></div>
-                    </div>
-                    <div class="employee-days-summary">
-                        <div class="summary-grid">
-                            <div class="summary-item"><span class="summary-label">Total</span><span class="summary-value" id="totalDaysOff">0</span></div>
-                            <div class="summary-item"><span class="summary-label">FDS</span><span class="summary-value" id="weekendDaysOff">0</span></div>
-                            <div class="summary-item"><span class="summary-label">Feriado</span><span class="summary-value" id="holidayDaysOff">0</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div id="historyForm" class="employee-form-section" style="display: none;">
-                    <div class="form-group">
-                        <label>Histórico de Folgas:</label>
-                        <div id="employeeHistoryContainer" class="history-grid"></div>
-                    </div>
-                    <div class="form-group">
-                        <button type="button" class="btn btn-info" id="viewAllHistoryBtn" style="width:100%">
-                            <i class="fas fa-history"></i> Ver Histórico Completo
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="editScaleBtnMobile">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn btn-success" id="addEmployeeBtnMobile">
+                            <i class="fas fa-user-plus"></i> Novo Func.
+                        </button>
+                        <button class="btn btn-info" id="filterBtnMobile">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                        <button class="btn btn-warning" id="todayBtnMobile">
+                            <i class="fas fa-calendar-day"></i> Hoje
                         </button>
                     </div>
                 </div>
-                <div id="additionalForm" class="employee-form-section" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group"><label>Email:</label><input type="email" id="employeeEmail" class="form-control"></div>
-                        <div class="form-group"><label>Tel:</label><input type="tel" id="employeePhone" class="form-control"></div>
-                    </div>
-                    <div class="form-group"><label>Obs:</label><textarea id="employeeNotes" class="form-control" rows="3"></textarea></div>
-                    <div class="form-group">
-                        <button type="button" class="btn btn-danger btn-sm" id="deleteEmployeeBtn" style="width:100%"><i class="fas fa-trash"></i> Excluir Funcionário</button>
-                    </div>
-                </div>
-                <input type="hidden" id="employeeId" value="">
-                <div class="form-group" style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-success" style="width: 100%;"><i class="fas fa-save"></i> Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <div class="modal" id="companyModal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Dados da Empresa</h3><button class="close-modal" id="closeCompanyModal">&times;</button></div>
-            <form id="companyForm">
-                <div class="form-group"><label>Nome:</label><input type="text" id="companyNameInput" class="form-control" required></div>
-                <div class="form-group"><label>Endereço:</label><input type="text" id="companyAddress" class="form-control"></div>
-                <div class="form-row">
-                    <div class="form-group"><label>Tel:</label><input type="text" id="companyPhone" class="form-control"></div>
-                    <div class="form-group"><label>Email:</label><input type="email" id="companyEmail" class="form-control"></div>
+                <div class="color-indicator-mobile">
+                    <div class="color-indicator-item-mobile">
+                        <div class="color-box-mobile color-offday"></div>
+                        <span>Folga</span>
+                    </div>
+                    <div class="color-indicator-item-mobile">
+                        <div class="color-box-mobile color-weekend"></div>
+                        <span>Fim de semana</span>
+                    </div>
+                    <div class="color-indicator-item-mobile">
+                        <div class="color-box-mobile color-holiday"></div>
+                        <span>Feriado</span>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-success" style="width: 100%;">Salvar</button>
-            </form>
-        </div>
-    </div>
 
-    <div class="modal" id="printModal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Impressão Avançada</h3><button class="close-modal" id="closePrintModal">&times;</button></div>
-            <form id="printForm">
-                <p style="margin-bottom: 20px; color: #666; font-size: 0.9rem;">
-                    <strong>Modo:</strong> Tabela Corrida Colorida (Folhas A4 Paisagem).
-                    <br><em>Certifique-se de que a opção "Gráficos de segundo plano" esteja ativada na janela de impressão do navegador.</em>
-                </p>
+                <div id="editModeIndicatorMobile" class="card" style="display: none; background-color: #e7f3ff; border-color: var(--primary-color); padding: 10px; margin-top: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-pencil-alt" style="color: var(--primary-color);"></i>
+                        <span style="font-weight: 600; color: var(--primary-color);">Modo de edição ativo - Toque nas células para marcar/desmarcar folgas</span>
+                    </div>
+                </div>
+
+                <div class="table-container-mobile">
+                    <div class="table-wrapper-mobile">
+                        <table id="scaleTableMobile">
+                            <thead id="tableHeaderMobile"></thead>
+                            <tbody id="scaleBodyMobile"></tbody>
+                        </table>
+                    </div>
+                    <div class="swipe-hint">
+                        <i class="fas fa-arrows-left-right"></i>
+                        <span>Arraste horizontalmente para ver mais dias</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Funcionários -->
+        <div id="employeesTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: var(--primary-color);">
+                    <i class="fas fa-users"></i> Funcionários
+                </h2>
+                
+                <div class="employee-list-mobile">
+                    <div class="employee-grid" id="employeeGridMobile"></div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-success" id="addNewEmployeeBtn" style="width: 100%;">
+                        <i class="fas fa-user-plus"></i> Adicionar Novo Funcionário
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Relatórios -->
+        <div id="reportsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: var(--primary-color);">
+                    <i class="fas fa-chart-bar"></i> Relatórios
+                </h2>
+                
+                <div class="tabs-mobile" style="margin-top: 20px;">
+                    <div class="tab-mobile active" data-report="summary">Resumo</div>
+                    <div class="tab-mobile" data-report="history">Histórico</div>
+                    <div class="tab-mobile" data-report="export">Exportar</div>
+                </div>
+
+                <div id="reportSummary" class="report-content">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem;">Resumo do Mês</h3>
+                    <div id="monthSummary" style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <p>Carregando resumo...</p>
+                    </div>
+                </div>
+
+                <div id="reportHistory" class="report-content" style="display: none;">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem;">Histórico</h3>
+                    <div id="historyList" style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <p>Carregando histórico...</p>
+                    </div>
+                </div>
+
+                <div id="reportExport" class="report-content" style="display: none;">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem;">Exportar Dados</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-info" id="exportBackupBtnMobile">
+                            <i class="fas fa-file-export"></i> Exportar Backup
+                        </button>
+                        <button class="btn btn-warning" id="importBackupBtnMobile">
+                            <i class="fas fa-file-import"></i> Importar Backup
+                        </button>
+                        <button class="btn btn-danger" id="clearDataBtnMobile">
+                            <i class="fas fa-trash-alt"></i> Limpar Dados
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Configurações -->
+        <div id="settingsTab" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: var(--primary-color);">
+                    <i class="fas fa-cog"></i> Configurações
+                </h2>
+                
                 <div class="form-group">
-                    <button type="button" class="btn btn-success" id="executePrint" style="width: 100%;">
-                        <i class="fas fa-print"></i> Visualizar e Imprimir
+                    <label>Nome da Empresa</label>
+                    <input type="text" id="companyNameMobile" class="form-control" placeholder="Digite o nome da empresa">
+                </div>
+
+                <div class="form-group">
+                    <label>Notificações</label>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                        <input type="checkbox" id="notificationsToggle" style="width: 20px; height: 20px;">
+                        <label for="notificationsToggle" style="margin: 0;">Receber lembretes de folgas</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tema</label>
+                    <select id="themeSelect" class="form-control">
+                        <option value="light">Claro</option>
+                        <option value="dark">Escuro</option>
+                        <option value="auto">Automático</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" id="saveSettingsBtn" style="width: 100%; margin-top: 20px;">
+                    <i class="fas fa-save"></i> Salvar Configurações
+                </button>
+
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: var(--gray-color); font-size: 0.8rem;">
+                    <p>Escala de Folgas Mobile v1.0</p>
+                    <p>Todos os dados são armazenados localmente no seu dispositivo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais Mobile -->
+    <div class="modal-mobile" id="employeeModalMobile">
+        <div class="modal-content-mobile">
+            <div class="modal-header-mobile">
+                <h3 style="margin: 0; font-size: 1.2rem;" id="employeeModalTitleMobile">Funcionário</h3>
+                <button class="close-modal-mobile" id="closeEmployeeModalMobile">&times;</button>
+            </div>
+            
+            <form id="employeeFormMobile">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="employeeNameMobile" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Código/Matrícula</label>
+                    <input type="text" id="employeeCodeMobile" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Cargo</label>
+                    <input type="text" id="employeeRoleMobile" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Departamento</label>
+                    <select id="employeeDepartmentMobile" class="form-control">
+                        <option value="">Selecione...</option>
+                        <option value="adm">Administrativo</option>
+                        <option value="op">Operacional</option>
+                        <option value="com">Comercial</option>
+                        <option value="rh">RH</option>
+                        <option value="ti">TI</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Folgas deste Mês</label>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <p style="margin-bottom: 10px; font-size: 0.9rem;">Selecione os dias de folga:</p>
+                        <div id="daysCheckboxContainerMobile" style="max-height: 200px; overflow-y: auto; padding: 10px; background: white; border-radius: 6px; border: 1px solid #ddd;">
+                            <!-- Checkboxes serão gerados aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="employeeIdMobile" value="">
+                
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="btn btn-danger" id="deleteEmployeeBtnMobile" style="flex: 1; display: none;">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                    <button type="submit" class="btn btn-success" style="flex: 2;">
+                        <i class="fas fa-save"></i> Salvar
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="modal" id="clearDatabaseModal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Limpar Dados</h3><button class="close-modal" id="closeClearDatabaseModal">&times;</button></div>
-            <form id="clearDatabaseForm">
-                <p style="margin-bottom: 20px; color: #e74c3c; font-weight: bold;">
-                    <i class="fas fa-exclamation-triangle"></i> ATENÇÃO: Esta ação apagará todos os dados do sistema (empresa e funcionários).
-                </p>
-                <p style="margin-bottom: 20px;">
-                    É recomendado exportar um backup antes de continuar.
-                </p>
-                <div class="form-group">
-                    <label for="confirmClearText">Digite "LIMPAR" para confirmar:</label>
-                    <input type="text" id="confirmClearText" class="form-control" placeholder="Digite LIMPAR aqui">
-                </div>
-                <div class="form-group" style="margin-top: 20px;">
-                    <button type="button" class="btn btn-danger" id="confirmClearBtn" style="width: 100%;" disabled>
-                        <i class="fas fa-trash"></i> Limpar Todos os Dados
-                    </button>
-                </div>
-            </form>
+    <!-- Modal de Confirmação Mobile -->
+    <div class="modal-mobile" id="confirmModalMobile">
+        <div class="modal-content-mobile" style="max-width: 400px;">
+            <div class="modal-header-mobile">
+                <h3 style="margin: 0; font-size: 1.2rem;" id="confirmModalTitle">Confirmação</h3>
+                <button class="close-modal-mobile" id="closeConfirmModal">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <p id="confirmModalMessage">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" id="confirmModalCancel" style="flex: 1;">Cancelar</button>
+                <button class="btn btn-danger" id="confirmModalOk" style="flex: 1;">Confirmar</button>
+            </div>
         </div>
     </div>
 
-    <div id="printPreviewContainer" style="display: none;"></div>
-    <div id="toastNotification" class="toast-notification">
+    <!-- Modal de Impressão Mobile -->
+    <div class="modal-mobile" id="printModalMobile">
+        <div class="modal-content-mobile">
+            <div class="modal-header-mobile">
+                <h3 style="margin: 0; font-size: 1.2rem;">Imprimir Escala</h3>
+                <button class="close-modal-mobile" id="closePrintModalMobile">&times;</button>
+            </div>
+            <div style="padding: 20px 0;">
+                <p style="margin-bottom: 15px;">Escolha o formato de impressão:</p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-info" id="printSimpleBtn">
+                        <i class="fas fa-print"></i> Imprimir Simples
+                    </button>
+                    <button class="btn btn-primary" id="printDetailedBtn">
+                        <i class="fas fa-file-pdf"></i> Imprimir Detalhado
+                    </button>
+                    <button class="btn btn-success" id="shareBtn">
+                        <i class="fas fa-share"></i> Compartilhar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastMobile" class="toast-mobile">
         <i class="fas fa-check-circle"></i>
-        <span id="toastMessage">Operação realizada com sucesso!</span>
+        <span id="toastMessageMobile">Operação realizada!</span>
     </div>
-    <div id="databaseStatus" class="database-status">
+
+    <!-- Status do Banco de Dados -->
+    <div id="databaseStatusMobile" class="database-status-mobile">
         <i class="fas fa-database"></i>
-        <span id="databaseStatusText">IndexedDB Conectado</span>
+        <span id="databaseStatusTextMobile">Conectado</span>
     </div>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
+    </div>
+
+    <!-- Input de backup oculto -->
+    <input type="file" id="backupFileInputMobile" accept=".json" style="display: none;">
 
     <script>
-        // --- CONFIGURAÇÕES GLOBAIS ---
+        // --- CONFIGURAÇÕES GLOBAIS MOBILE ---
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let daysInMonth = 31;
-        let isFilterActive = false;
         let isEditMode = false;
-        let currentEmployeeFormSection = 'basic';
+        let isFilterActive = false;
+        let currentTab = 'calendar';
         let db = null;
         let employeesData = [];
 
         const monthNames = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
         const monthNamesShort = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const weekdayNames = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
-        const holidays = [{ day: 1, month: 0, description: "Ano Novo" }, { day: 25, month: 11, description: "Natal" }];
+        const holidays = [
+            { day: 1, month: 0, description: "Ano Novo" },
+            { day: 25, month: 11, description: "Natal" },
+            { day: 7, month: 8, description: "Independência" }
+        ];
 
-        // --- HELPERS ---
-        function getDaysInMonth(month, year) { return new Date(year, month + 1, 0).getDate(); }
-        function getDayOfWeek(day, month, year) { return new Date(year, month, day).getDay(); }
-        function isHoliday(day, month, year) { return holidays.some(h => h.day === day && h.month === month); }
-        function getHolidayName(day, month, year) { const h = holidays.find(h => h.day === day && h.month === month); return h ? h.description : null; }
-        function getMonthYearKey(month = currentMonth, year = currentYear) { return `${year}-${String(month + 1).padStart(2, '0')}`; }
+        // --- FUNÇÕES DE UTILIDADE ---
+        function getDaysInMonth(month, year) {
+            return new Date(year, month + 1, 0).getDate();
+        }
 
-        // --- FUNÇÕES DE NOTIFICAÇÃO ---
+        function getDayOfWeek(day, month, year) {
+            return new Date(year, month, day).getDay();
+        }
+
+        function isHoliday(day, month, year) {
+            return holidays.some(h => h.day === day && h.month === month);
+        }
+
+        function getHolidayName(day, month, year) {
+            const h = holidays.find(h => h.day === day && h.month === month);
+            return h ? h.description : null;
+        }
+
+        function getMonthYearKey(month = currentMonth, year = currentYear) {
+            return `${year}-${String(month + 1).padStart(2, '0')}`;
+        }
+
+        // --- UI HELPERS MOBILE ---
+        function showLoader() {
+            document.getElementById('loader').classList.add('active');
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').classList.remove('active');
+        }
+
         function showToast(message, type = 'success') {
-            const toast = document.getElementById('toastNotification');
-            const messageEl = document.getElementById('toastMessage');
+            const toast = document.getElementById('toastMobile');
+            const messageEl = document.getElementById('toastMessageMobile');
             
-            messageEl.textContent = message;
-            toast.className = 'toast-notification';
+            // Configurar ícone baseado no tipo
+            let icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+            if (type === 'warning') icon = 'fa-exclamation-triangle';
+            
+            toast.innerHTML = `<i class="fas ${icon}"></i><span id="toastMessageMobile">${message}</span>`;
+            
+            // Aplicar classes
+            toast.className = 'toast-mobile';
             toast.classList.add(type);
-            toast.classList.add('show');
             
+            // Mostrar toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Ocultar após 3 segundos
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
 
         function updateDatabaseStatus(message, type = 'success') {
-            const statusEl = document.getElementById('databaseStatus');
-            const textEl = document.getElementById('databaseStatusText');
+            const statusEl = document.getElementById('databaseStatusMobile');
+            const textEl = document.getElementById('databaseStatusTextMobile');
             
             textEl.textContent = message;
-            statusEl.className = 'database-status';
-            statusEl.classList.add(type);
+            statusEl.className = 'database-status-mobile';
+            if (type !== 'success') {
+                statusEl.classList.add(type);
+            }
             
             if (type === 'success') {
                 setTimeout(() => {
@@ -712,109 +1163,132 @@
             }
         }
 
-        // --- INDEXEDDB ---
-        const DB_NAME = 'EscalaFolgasDB';
-        const DB_VERSION = 2;
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            
+            const modal = document.getElementById('confirmModalMobile');
+            const confirmBtn = document.getElementById('confirmModalOk');
+            const cancelBtn = document.getElementById('confirmModalCancel');
+            
+            // Configurar handler de confirmação
+            const confirmHandler = () => {
+                modal.style.display = 'none';
+                if (onConfirm) onConfirm();
+                confirmBtn.removeEventListener('click', confirmHandler);
+                cancelBtn.removeEventListener('click', cancelHandler);
+            };
+            
+            const cancelHandler = () => {
+                modal.style.display = 'none';
+                confirmBtn.removeEventListener('click', confirmHandler);
+                cancelBtn.removeEventListener('click', cancelHandler);
+            };
+            
+            confirmBtn.addEventListener('click', confirmHandler);
+            cancelBtn.addEventListener('click', cancelHandler);
+            
+            modal.style.display = 'flex';
+        }
+
+        // --- INDEXEDDB MOBILE ---
+        const DB_NAME = 'EscalaFolgasMobileDB';
+        const DB_VERSION = 1;
         const COMPANY_STORE = 'company';
         const EMPLOYEES_STORE = 'employees';
 
         function initDatabase() {
             return new Promise((resolve, reject) => {
+                showLoader();
+                
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
                 request.onerror = (event) => {
                     console.error('Erro ao abrir o banco de dados:', event.target.error);
-                    updateDatabaseStatus('Erro ao conectar com IndexedDB', 'error');
+                    hideLoader();
+                    updateDatabaseStatus('Erro ao conectar com o banco de dados', 'error');
                     reject(event.target.error);
                 };
                 
                 request.onsuccess = (event) => {
                     db = event.target.result;
-                    console.log('Banco de dados aberto com sucesso');
-                    updateDatabaseStatus('IndexedDB Conectado');
+                    console.log('Banco de dados móvel aberto com sucesso');
                     
-                    loadCompanyData();
-                    loadEmployeesData().then(() => {
-                        initTable();
+                    // Verificar se há dados existentes
+                    checkExistingData().then(() => {
+                        hideLoader();
+                        updateDatabaseStatus('Conectado');
                         resolve(db);
                     });
                 };
                 
                 request.onupgradeneeded = (event) => {
                     const db = event.target.result;
-                    const oldVersion = event.oldVersion;
                     
-                    if (oldVersion < 1) {
-                        // Criar object store para dados da empresa
-                        if (!db.objectStoreNames.contains(COMPANY_STORE)) {
-                            const companyStore = db.createObjectStore(COMPANY_STORE, { keyPath: 'id' });
-                            companyStore.createIndex('id', 'id', { unique: true });
-                            
-                            const defaultCompanyData = {
-                                id: 1,
-                                name: "Minha Empresa",
-                                address: "Rua Exemplo, 123",
-                                phone: "(11) 9999-9999",
-                                email: "contato@empresa.com"
-                            };
-                            companyStore.add(defaultCompanyData);
-                        }
+                    // Criar store para dados da empresa
+                    if (!db.objectStoreNames.contains(COMPANY_STORE)) {
+                        const companyStore = db.createObjectStore(COMPANY_STORE, { keyPath: 'id' });
+                        companyStore.createIndex('id', 'id', { unique: true });
                         
-                        // Criar object store para funcionários
-                        if (!db.objectStoreNames.contains(EMPLOYEES_STORE)) {
-                            const employeesStore = db.createObjectStore(EMPLOYEES_STORE, { keyPath: 'id', autoIncrement: true });
-                            employeesStore.createIndex('id', 'id', { unique: true });
-                            employeesStore.createIndex('name', 'name', { unique: false });
-                            
-                            const defaultEmployees = [
-                                { name: "João Silva", daysOffByMonth: {}, code: "JS01", role: "Analista", department: "adm" },
-                                { name: "Maria Santos", daysOffByMonth: {}, code: "MS02", role: "Gerente", department: "com" },
-                                { name: "Pedro Oliveira", daysOffByMonth: {}, code: "PO03", role: "Técnico", department: "op" },
-                                { name: "Ana Costa", daysOffByMonth: {}, code: "AC04", role: "Assistente", department: "rh" },
-                                { name: "Carlos Lima", daysOffByMonth: {}, code: "CL05", role: "Dev", department: "ti" },
-                                { name: "Fernanda Souza", daysOffByMonth: {}, code: "FS06", role: "Coord.", department: "adm" },
-                                { name: "Ricardo Alves", daysOffByMonth: {}, code: "RA07", role: "Sup.", department: "op" }
-                            ];
-                            
-                            // Adicionar folgas de exemplo para o mês atual
-                            const currentKey = getMonthYearKey();
-                            defaultEmployees[0].daysOffByMonth[currentKey] = [2, 9, 16, 23, 30];
-                            defaultEmployees[1].daysOffByMonth[currentKey] = [3, 10, 17, 24, 31];
-                            defaultEmployees[2].daysOffByMonth[currentKey] = [4, 11, 18, 25];
-                            defaultEmployees[3].daysOffByMonth[currentKey] = [5, 12, 19, 26];
-                            defaultEmployees[4].daysOffByMonth[currentKey] = [6, 13, 20, 27];
-                            defaultEmployees[5].daysOffByMonth[currentKey] = [7, 14, 21, 28];
-                            defaultEmployees[6].daysOffByMonth[currentKey] = [1, 8, 15, 22, 29];
-                            
-                            defaultEmployees.forEach(employee => {
-                                employeesStore.add(employee);
-                            });
-                        }
+                        // Dados padrão da empresa
+                        const defaultCompanyData = {
+                            id: 1,
+                            name: "Minha Empresa",
+                            notifications: true,
+                            theme: 'light'
+                        };
+                        companyStore.add(defaultCompanyData);
                     }
                     
-                    // Migração para a versão 2 (adicionar daysOffByMonth se não existir)
-                    if (oldVersion < 2) {
-                        const transaction = event.target.transaction;
-                        const employeesStore = transaction.objectStore(EMPLOYEES_STORE);
-                        const request = employeesStore.getAll();
+                    // Criar store para funcionários
+                    if (!db.objectStoreNames.contains(EMPLOYEES_STORE)) {
+                        const employeesStore = db.createObjectStore(EMPLOYEES_STORE, { keyPath: 'id', autoIncrement: true });
+                        employeesStore.createIndex('id', 'id', { unique: true });
+                        employeesStore.createIndex('name', 'name', { unique: false });
                         
-                        request.onsuccess = (e) => {
-                            const employees = e.target.result;
-                            employees.forEach(employee => {
-                                if (!employee.daysOffByMonth && employee.daysOff) {
-                                    // Migrar dados antigos para a nova estrutura
-                                    const currentKey = getMonthYearKey();
-                                    employee.daysOffByMonth = {
-                                        [currentKey]: employee.daysOff
-                                    };
-                                    delete employee.daysOff;
-                                    employeesStore.put(employee);
-                                }
-                            });
-                        };
+                        // Dados de exemplo para demonstração
+                        const defaultEmployees = [
+                            { 
+                                name: "João Silva", 
+                                daysOffByMonth: {}, 
+                                code: "JS01", 
+                                role: "Analista", 
+                                department: "adm",
+                                phone: "(11) 99999-9999"
+                            },
+                            { 
+                                name: "Maria Santos", 
+                                daysOffByMonth: {}, 
+                                code: "MS02", 
+                                role: "Gerente", 
+                                department: "com",
+                                phone: "(11) 98888-8888"
+                            }
+                        ];
+                        
+                        // Adicionar folgas de exemplo para o mês atual
+                        const currentKey = getMonthYearKey();
+                        defaultEmployees[0].daysOffByMonth[currentKey] = [2, 9, 16, 23, 30];
+                        defaultEmployees[1].daysOffByMonth[currentKey] = [3, 10, 17, 24, 31];
+                        
+                        defaultEmployees.forEach(employee => {
+                            employeesStore.add(employee);
+                        });
                     }
                 };
             });
+        }
+
+        async function checkExistingData() {
+            try {
+                await loadCompanyData();
+                await loadEmployeesData();
+                initTableMobile();
+                updateEmployeeGrid();
+                updateMonthSummary();
+            } catch (error) {
+                console.error('Erro ao verificar dados existentes:', error);
+            }
         }
 
         // --- OPERAÇÕES COM DADOS DA EMPRESA ---
@@ -832,14 +1306,18 @@
                 request.onsuccess = (event) => {
                     const companyData = event.target.result || {
                         name: "Minha Empresa",
-                        address: "Rua Exemplo, 123",
-                        phone: "(11) 9999-9999",
-                        email: "contato@empresa.com"
+                        notifications: true,
+                        theme: 'light'
                     };
                     
-                    document.getElementById('companyNameDisplay').textContent = companyData.name;
-                    let details = [companyData.address, companyData.phone, companyData.email].filter(Boolean).join(' • ');
-                    document.getElementById('companyDetailsDisplay').textContent = details;
+                    // Atualizar UI
+                    document.getElementById('mobileCompanyName').textContent = companyData.name;
+                    document.getElementById('companyNameMobile').value = companyData.name;
+                    document.getElementById('notificationsToggle').checked = companyData.notifications || true;
+                    document.getElementById('themeSelect').value = companyData.theme || 'light';
+                    
+                    // Aplicar tema
+                    applyTheme(companyData.theme || 'light');
                     
                     resolve(companyData);
                 };
@@ -867,16 +1345,46 @@
                 
                 request.onsuccess = () => {
                     console.log('Dados da empresa salvos com sucesso');
-                    showToast('Dados da empresa salvos!');
+                    showToast('Configurações salvas!');
+                    
+                    // Atualizar nome da empresa no header
+                    document.getElementById('mobileCompanyName').textContent = companyData.name;
+                    
+                    // Aplicar tema
+                    applyTheme(companyData.theme);
+                    
                     resolve();
                 };
                 
                 request.onerror = (event) => {
                     console.error('Erro ao salvar dados da empresa:', event.target.error);
-                    showToast('Erro ao salvar dados da empresa', 'error');
+                    showToast('Erro ao salvar configurações', 'error');
                     reject(event.target.error);
                 };
             });
+        }
+
+        function applyTheme(theme) {
+            const body = document.body;
+            
+            // Remover classes de tema anteriores
+            body.classList.remove('theme-dark', 'theme-light');
+            
+            if (theme === 'dark') {
+                body.classList.add('theme-dark');
+                // Aplicar variáveis para tema escuro
+                document.documentElement.style.setProperty('--primary-color', '#2980b9');
+                document.documentElement.style.setProperty('--dark-color', '#ecf0f1');
+                document.documentElement.style.setProperty('--light-color', '#2c3e50');
+                document.documentElement.style.setProperty('--border-color', '#3498db');
+            } else {
+                body.classList.add('theme-light');
+                // Restaurar variáveis originais
+                document.documentElement.style.setProperty('--primary-color', '#3498db');
+                document.documentElement.style.setProperty('--dark-color', '#2c3e50');
+                document.documentElement.style.setProperty('--light-color', '#f8f9fa');
+                document.documentElement.style.setProperty('--border-color', '#3498db');
+            }
         }
 
         // --- OPERAÇÕES COM FUNCIONÁRIOS ---
@@ -912,7 +1420,7 @@
             });
         }
 
-        async function saveEmployee(employeeData, skipReload = false) {
+        async function saveEmployee(employeeData) {
             return new Promise((resolve, reject) => {
                 if (!db) {
                     reject('Banco de dados não inicializado');
@@ -938,10 +1446,10 @@
                     console.log('Funcionário salvo com sucesso');
                     showToast('Funcionário salvo!');
                     
-                    if (!skipReload) {
-                        await loadEmployeesData();
-                        initTable();
-                    }
+                    await loadEmployeesData();
+                    initTableMobile();
+                    updateEmployeeGrid();
+                    updateMonthSummary();
                     
                     resolve(request.result);
                 };
@@ -954,7 +1462,7 @@
             });
         }
 
-        async function deleteEmployeeFromDB(id) {
+        async function deleteEmployee(id) {
             return new Promise((resolve, reject) => {
                 if (!db) {
                     reject('Banco de dados não inicializado');
@@ -970,7 +1478,9 @@
                     showToast('Funcionário excluído!');
                     
                     await loadEmployeesData();
-                    initTable();
+                    initTableMobile();
+                    updateEmployeeGrid();
+                    updateMonthSummary();
                     
                     resolve();
                 };
@@ -990,243 +1500,107 @@
                     return;
                 }
                 
-                const companyTransaction = db.transaction([COMPANY_STORE], 'readwrite');
-                const companyStore = companyTransaction.objectStore(COMPANY_STORE);
-                const companyClearRequest = companyStore.clear();
+                const transaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
+                const store = transaction.objectStore(EMPLOYEES_STORE);
+                const request = store.clear();
                 
-                companyClearRequest.onsuccess = () => {
-                    const employeesTransaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
-                    const employeesStore = employeesTransaction.objectStore(EMPLOYEES_STORE);
-                    const employeesClearRequest = employeesStore.clear();
+                request.onsuccess = async () => {
+                    console.log('Dados limpos com sucesso');
                     
-                    employeesClearRequest.onsuccess = async () => {
-                        console.log('Todos os dados foram limpos');
-                        
-                        await loadEmployeesData();
-                        await loadCompanyData();
-                        initTable();
-                        
-                        showToast('Todos os dados foram limpos!', 'warning');
-                        resolve();
-                    };
+                    // Recriar dados padrão da empresa
+                    const companyTransaction = db.transaction([COMPANY_STORE], 'readwrite');
+                    const companyStore = companyTransaction.objectStore(COMPANY_STORE);
+                    companyStore.put({
+                        id: 1,
+                        name: "Minha Empresa",
+                        notifications: true,
+                        theme: 'light'
+                    });
                     
-                    employeesClearRequest.onerror = (event) => {
-                        console.error('Erro ao limpar funcionários:', event.target.error);
-                        reject(event.target.error);
-                    };
+                    await loadEmployeesData();
+                    await loadCompanyData();
+                    initTableMobile();
+                    updateEmployeeGrid();
+                    updateMonthSummary();
+                    
+                    showToast('Todos os dados foram limpos!', 'warning');
+                    resolve();
                 };
                 
-                companyClearRequest.onerror = (event) => {
-                    console.error('Erro ao limpar dados da empresa:', event.target.error);
+                request.onerror = (event) => {
+                    console.error('Erro ao limpar dados:', event.target.error);
+                    showToast('Erro ao limpar dados', 'error');
                     reject(event.target.error);
                 };
             });
         }
 
-        // --- BACKUP E RESTAURAÇÃO ---
-        async function exportBackup() {
-            try {
-                const companyData = await new Promise((resolve, reject) => {
-                    const transaction = db.transaction([COMPANY_STORE], 'readonly');
-                    const store = transaction.objectStore(COMPANY_STORE);
-                    const request = store.get(1);
-                    
-                    request.onsuccess = (event) => resolve(event.target.result);
-                    request.onerror = (event) => reject(event.target.error);
-                });
-                
-                const employeesData = await new Promise((resolve, reject) => {
-                    const transaction = db.transaction([EMPLOYEES_STORE], 'readonly');
-                    const store = transaction.objectStore(EMPLOYEES_STORE);
-                    const request = store.getAll();
-                    
-                    request.onsuccess = (event) => resolve(event.target.result);
-                    request.onerror = (event) => reject(event.target.error);
-                });
-                
-                const backupData = {
-                    version: 2,
-                    timestamp: new Date().toISOString(),
-                    company: companyData,
-                    employees: employeesData,
-                    exportDate: new Date().toLocaleDateString('pt-BR'),
-                    exportTime: new Date().toLocaleTimeString('pt-BR')
-                };
-                
-                const jsonData = JSON.stringify(backupData, null, 2);
-                const blob = new Blob([jsonData], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `backup_escala_folgas_${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showToast('Backup exportado com sucesso!');
-                return backupData;
-            } catch (error) {
-                console.error('Erro ao exportar backup:', error);
-                showToast('Erro ao exportar backup', 'error');
-                throw error;
-            }
-        }
-
-        async function importBackup(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                
-                reader.onload = async (event) => {
-                    try {
-                        const backupData = JSON.parse(event.target.result);
-                        
-                        if (!backupData.company || !backupData.employees) {
-                            throw new Error('Arquivo de backup inválido');
-                        }
-                        
-                        // Importar dados da empresa
-                        if (backupData.company) {
-                            const companyTransaction = db.transaction([COMPANY_STORE], 'readwrite');
-                            const companyStore = companyTransaction.objectStore(COMPANY_STORE);
-                            const companyClearRequest = companyStore.clear();
-                            
-                            companyClearRequest.onsuccess = () => {
-                                backupData.company.id = 1;
-                                const putRequest = companyStore.put(backupData.company);
-                                
-                                putRequest.onsuccess = async () => {
-                                    // Importar funcionários
-                                    const employeesTransaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
-                                    const employeesStore = employeesTransaction.objectStore(EMPLOYEES_STORE);
-                                    const employeesClearRequest = employeesStore.clear();
-                                    
-                                    employeesClearRequest.onsuccess = () => {
-                                        // Migrar dados antigos se necessário
-                                        const employeesToAdd = backupData.employees.map(employee => {
-                                            // Se for backup antigo (sem daysOffByMonth), migrar
-                                            if (!employee.daysOffByMonth && employee.daysOff) {
-                                                const currentKey = getMonthYearKey();
-                                                employee.daysOffByMonth = {
-                                                    [currentKey]: employee.daysOff
-                                                };
-                                                delete employee.daysOff;
-                                            }
-                                            return employee;
-                                        });
-                                        
-                                        const addPromises = employeesToAdd.map(employee => {
-                                            return new Promise((resolveAdd, rejectAdd) => {
-                                                const addRequest = employeesStore.add(employee);
-                                                addRequest.onsuccess = () => resolveAdd();
-                                                addRequest.onerror = (e) => rejectAdd(e.target.error);
-                                            });
-                                        });
-                                        
-                                        Promise.all(addPromises).then(async () => {
-                                            await loadEmployeesData();
-                                            await loadCompanyData();
-                                            initTable();
-                                            
-                                            showToast(`Backup importado com sucesso! ${backupData.employees.length} funcionários restaurados.`);
-                                            resolve();
-                                        }).catch(error => {
-                                            console.error('Erro ao importar funcionários:', error);
-                                            showToast('Erro ao importar funcionários do backup', 'error');
-                                            reject(error);
-                                        });
-                                    };
-                                    
-                                    employeesClearRequest.onerror = (e) => {
-                                        console.error('Erro ao limpar funcionários:', e.target.error);
-                                        reject(e.target.error);
-                                    };
-                                };
-                                
-                                putRequest.onerror = (e) => {
-                                    console.error('Erro ao importar dados da empresa:', e.target.error);
-                                    reject(e.target.error);
-                                };
-                            };
-                            
-                            companyClearRequest.onerror = (e) => {
-                                console.error('Erro ao limpar dados da empresa:', e.target.error);
-                                reject(e.target.error);
-                            };
-                        }
-                    } catch (error) {
-                        console.error('Erro ao processar arquivo de backup:', error);
-                        showToast('Erro ao processar arquivo de backup', 'error');
-                        reject(error);
-                    }
-                };
-                
-                reader.onerror = (event) => {
-                    console.error('Erro ao ler arquivo:', event.target.error);
-                    showToast('Erro ao ler arquivo', 'error');
-                    reject(event.target.error);
-                };
-                
-                reader.readAsText(file);
-            });
-        }
-
-        // --- TABELA PRINCIPAL ---
-        function initTable() {
+        // --- TABELA MOBILE ---
+        function initTableMobile() {
             daysInMonth = getDaysInMonth(currentMonth, currentYear);
-            const tableHeader = document.getElementById('tableHeader');
-            const scaleBody = document.getElementById('scaleBody');
+            const tableHeader = document.getElementById('tableHeaderMobile');
+            const scaleBody = document.getElementById('scaleBodyMobile');
+            
             tableHeader.innerHTML = '';
             
-            const hRow1 = document.createElement('tr');
-            hRow1.innerHTML = `<th rowspan="3" class="func-header">Func.</th><th colspan="${daysInMonth}" class="month-header">${monthNames[currentMonth]} ${currentYear}</th>`;
-            tableHeader.appendChild(hRow1);
+            // Criar cabeçalho da tabela
+            const headerRow = document.createElement('tr');
             
-            const hRow2 = document.createElement('tr'); 
-            const hRow3 = document.createElement('tr'); 
+            // Célula para nome do funcionário
+            const thName = document.createElement('th');
+            thName.textContent = 'Funcionário';
+            thName.style.minWidth = '120px';
+            headerRow.appendChild(thName);
             
+            // Células para os dias do mês
             for (let day = 1; day <= daysInMonth; day++) {
+                const th = document.createElement('th');
+                th.innerHTML = `<div style="font-size: 0.7rem;">${weekdayNames[getDayOfWeek(day, currentMonth, currentYear)].charAt(0)}</div>
+                               <div style="font-weight: bold; font-size: 0.9rem;">${day}</div>`;
+                th.style.minWidth = '35px';
+                th.style.maxWidth = '35px';
+                
                 const dow = getDayOfWeek(day, currentMonth, currentYear);
-                const isWknd = dow === 0 || dow === 6;
-                const holName = getHolidayName(day, currentMonth, currentYear);
+                if (dow === 0 || dow === 6) {
+                    th.classList.add('weekend');
+                }
+                if (isHoliday(day, currentMonth, currentYear)) {
+                    th.classList.add('holiday');
+                    th.title = getHolidayName(day, currentMonth, currentYear);
+                }
                 
-                const thWk = document.createElement('th');
-                thWk.textContent = weekdayNames[dow];
-                thWk.className = 'weekday-header';
-                thWk.dataset.day = day;
-                if (isWknd) thWk.style.backgroundColor = '#5d6d7e';
-                if (holName) thWk.title = holName;
-                hRow2.appendChild(thWk);
-                
-                const thDay = document.createElement('th');
-                thDay.innerHTML = `<span class="day-number">${day}</span>`;
-                thDay.dataset.day = day;
-                if (isWknd) thDay.classList.add('weekend');
-                if (holName) { thDay.classList.add('holiday'); thDay.title = holName; }
-                hRow3.appendChild(thDay);
+                headerRow.appendChild(th);
             }
-            tableHeader.appendChild(hRow2);
-            tableHeader.appendChild(hRow3);
             
+            tableHeader.appendChild(headerRow);
+            
+            // Limpar corpo da tabela
             scaleBody.innerHTML = '';
+            
+            // Ordenar funcionários por nome
             employeesData.sort((a, b) => a.name.localeCompare(b.name));
             const currentKey = getMonthYearKey();
             
+            // Adicionar linhas para cada funcionário
             employeesData.forEach(employee => {
-                const tr = document.createElement('tr');
-                tr.dataset.employeeId = employee.id;
+                const row = document.createElement('tr');
+                row.dataset.employeeId = employee.id;
                 
+                // Célula do nome
                 const tdName = document.createElement('td');
-                tdName.className = 'employee-name';
-                tdName.innerHTML = `<span style="cursor:pointer; width:100%" title="Editar">${employee.name}</span>`;
-                tdName.addEventListener('click', () => openEmployeeModal(employee.id));
-                tr.appendChild(tdName);
+                tdName.className = 'employee-name-mobile';
+                tdName.innerHTML = `<span title="Clique para editar">${employee.name}</span>`;
+                tdName.addEventListener('click', () => openEmployeeModalMobile(employee.id));
+                row.appendChild(tdName);
                 
+                // Obter folgas deste mês
                 const daysOffThisMonth = employee.daysOffByMonth ? employee.daysOffByMonth[currentKey] : [];
                 
+                // Células para cada dia do mês
                 for (let day = 1; day <= daysInMonth; day++) {
                     const td = document.createElement('td');
                     const isDayOff = daysOffThisMonth && daysOffThisMonth.includes(day);
+                    
                     td.className = 'editable ' + (isDayOff ? 'off-day' : 'empty-cell');
                     td.textContent = isDayOff ? "F" : "";
                     
@@ -1236,42 +1610,24 @@
                     
                     td.dataset.day = day;
                     td.dataset.employeeId = employee.id;
-                    td.addEventListener('click', handleCellClick);
-                    tr.appendChild(td);
+                    td.addEventListener('click', handleCellClickMobile);
+                    row.appendChild(td);
                 }
-                scaleBody.appendChild(tr);
+                
+                scaleBody.appendChild(row);
             });
             
-            updateEmployeeList();
-            if (isFilterActive) applyDayOffFilter();
             updateEditModeUI();
-            
-            // Atualizar histórico
-            updateHistoryDisplay();
         }
 
-        function updateEmployeeList() {
-            const employeeList = document.getElementById('employeeList');
-            employeeList.innerHTML = '';
-            employeesData.forEach(emp => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <div class="employee-list-item-content">
-                        <div><span style="font-weight:600">${emp.name}</span><span style="color:#777; font-size:0.75rem"> • ${emp.role || '-'}</span></div>
-                        <div class="employee-list-actions">
-                            <button class="btn btn-warning btn-sm" onclick="openEmployeeModal(${emp.id})"><i class="fas fa-edit"></i></button>
-                        </div>
-                    </div>`;
-                employeeList.appendChild(li);
-            });
-        }
-
-        async function handleCellClick(e) {
+        async function handleCellClickMobile(e) {
             if (!isEditMode) return;
+            
             const cell = e.target;
             const empId = parseInt(cell.dataset.employeeId);
             const day = parseInt(cell.dataset.day);
             const emp = employeesData.find(e => e.id === empId);
+            
             if (!emp) return;
 
             const currentKey = getMonthYearKey();
@@ -1286,6 +1642,12 @@
                 cell.textContent = "F";
                 cell.classList.add('off-day');
                 cell.classList.remove('empty-cell');
+                
+                // Feedback tátil
+                cell.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    cell.style.transform = '';
+                }, 150);
             } else {
                 emp.daysOffByMonth[currentKey].splice(idx, 1);
                 cell.textContent = "";
@@ -1295,617 +1657,786 @@
             
             try {
                 await saveEmployee(emp);
-                updateHistoryDisplay();
+                updateMonthSummary();
             } catch (error) {
                 console.error('Erro ao salvar alteração da folga:', error);
                 showToast('Erro ao salvar alteração', 'error');
             }
         }
 
-        // --- HISTÓRICO DE FOLGAS ---
-        function updateHistoryDisplay() {
-            const historySection = document.getElementById('historySection');
-            const historyContent = document.getElementById('historyContent');
+        function updateEditModeUI() {
+            const btn = document.getElementById('editScaleBtnMobile');
+            const indicator = document.getElementById('editModeIndicatorMobile');
             
-            // Verificar se há histórico para mostrar
-            let hasHistory = false;
-            employeesData.forEach(emp => {
-                const empHistory = emp.daysOffByMonth || {};
-                const months = Object.keys(empHistory);
-                if (months.length > 0) {
-                    months.forEach(monthKey => {
-                        if (empHistory[monthKey] && empHistory[monthKey].length > 0) {
-                            hasHistory = true;
-                        }
-                    });
-                }
-            });
-            
-            if (hasHistory) {
-                historySection.style.display = 'block';
-                historyContent.innerHTML = '';
+            if (isEditMode) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Finalizar';
+                btn.className = 'btn btn-success';
+                indicator.style.display = 'block';
                 
-                // Mostrar histórico resumido
-                const summary = {};
-                employeesData.forEach(emp => {
-                    const empHistory = emp.daysOffByMonth || {};
-                    Object.keys(empHistory).forEach(monthKey => {
-                        if (!summary[monthKey]) {
-                            summary[monthKey] = 0;
-                        }
-                        summary[monthKey] += empHistory[monthKey] ? empHistory[monthKey].length : 0;
-                    });
-                });
-                
-                // Ordenar meses (do mais recente para o mais antigo)
-                const sortedMonths = Object.keys(summary).sort((a, b) => b.localeCompare(a)).slice(0, 6);
-                
-                sortedMonths.forEach(monthKey => {
-                    const [year, month] = monthKey.split('-');
-                    const monthName = monthNamesShort[parseInt(month) - 1];
-                    const div = document.createElement('div');
-                    div.className = 'history-month';
-                    div.innerHTML = `
-                        <div class="history-month-header">
-                            <span>${monthName}/${year}</span>
-                            <span>${summary[monthKey]} folgas</span>
-                        </div>
-                        <div class="history-days-list">
-                            ${employeesData.filter(emp => 
-                                emp.daysOffByMonth && 
-                                emp.daysOffByMonth[monthKey] && 
-                                emp.daysOffByMonth[monthKey].length > 0
-                            ).map(emp => 
-                                `<span class="history-day" title="${emp.name}: ${emp.daysOffByMonth[monthKey].length} folgas">${emp.name.split(' ')[0].substring(0,3)}</span>`
-                            ).join('')}
-                        </div>
-                    `;
-                    historyContent.appendChild(div);
+                // Adicionar efeito visual nas células editáveis
+                document.querySelectorAll('.editable').forEach(c => {
+                    c.style.cursor = 'pointer';
+                    c.style.border = '1px dashed var(--primary-color)';
                 });
             } else {
-                historySection.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-edit"></i> Editar';
+                btn.className = 'btn btn-primary';
+                indicator.style.display = 'none';
+                
+                // Remover efeito visual
+                document.querySelectorAll('.editable').forEach(c => {
+                    c.style.cursor = 'default';
+                    c.style.border = '';
+                });
             }
         }
 
-        // --- MODAL FUNCIONARIO ---
-        function openEmployeeModal(id = null, section = 'basic') {
-            const modal = document.getElementById('employeeModal');
-            const deleteBtn = document.getElementById('deleteEmployeeBtn');
+        // --- GRADE DE FUNCIONÁRIOS MOBILE ---
+        function updateEmployeeGrid() {
+            const grid = document.getElementById('employeeGridMobile');
+            grid.innerHTML = '';
+            
+            if (employeesData.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--gray-color);">
+                        <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                        <p>Nenhum funcionário cadastrado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            employeesData.forEach(emp => {
+                const card = document.createElement('div');
+                card.className = 'employee-card';
+                card.dataset.employeeId = emp.id;
+                
+                // Contar folgas deste mês
+                const currentKey = getMonthYearKey();
+                const daysOff = emp.daysOffByMonth && emp.daysOffByMonth[currentKey] ? emp.daysOffByMonth[currentKey].length : 0;
+                
+                card.innerHTML = `
+                    <div class="employee-card-name">${emp.name}</div>
+                    <div class="employee-card-details">
+                        <span>${emp.role || 'Sem cargo'}</span>
+                        <span>${daysOff} folga${daysOff !== 1 ? 's' : ''}</span>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => openEmployeeModalMobile(emp.id));
+                
+                // Adicionar efeito de toque longo para exclusão
+                let pressTimer;
+                card.addEventListener('touchstart', (e) => {
+                    pressTimer = setTimeout(() => {
+                        showConfirmModal(
+                            'Excluir Funcionário',
+                            `Deseja excluir ${emp.name}?`,
+                            () => deleteEmployee(emp.id)
+                        );
+                    }, 1000);
+                    e.preventDefault();
+                });
+                
+                card.addEventListener('touchend', () => {
+                    clearTimeout(pressTimer);
+                });
+                
+                card.addEventListener('touchmove', () => {
+                    clearTimeout(pressTimer);
+                });
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // --- MODAL DE FUNCIONÁRIO MOBILE ---
+        function openEmployeeModalMobile(id = null) {
+            const modal = document.getElementById('employeeModalMobile');
+            const deleteBtn = document.getElementById('deleteEmployeeBtnMobile');
             
             if (id) {
+                // Modo edição
                 const emp = employeesData.find(e => e.id === id);
-                document.getElementById('employeeModalTitle').textContent = "Editar Funcionário";
-                document.getElementById('employeeName').value = emp.name;
-                document.getElementById('employeeCode').value = emp.code || '';
-                document.getElementById('employeeRole').value = emp.role || '';
-                document.getElementById('employeeDepartment').value = emp.department || '';
-                document.getElementById('employeeEmail').value = emp.email || '';
-                document.getElementById('employeePhone').value = emp.phone || '';
-                document.getElementById('employeeNotes').value = emp.notes || '';
-                document.getElementById('employeeId').value = emp.id;
-                deleteBtn.style.display = 'block';
-                deleteBtn.onclick = () => { 
-                    if(confirm('Excluir funcionário?')) { 
-                        deleteEmployeeFromDB(id);
-                        modal.style.display = 'none';
-                    }
-                };
+                document.getElementById('employeeModalTitleMobile').textContent = "Editar Funcionário";
+                document.getElementById('employeeNameMobile').value = emp.name;
+                document.getElementById('employeeCodeMobile').value = emp.code || '';
+                document.getElementById('employeeRoleMobile').value = emp.role || '';
+                document.getElementById('employeeDepartmentMobile').value = emp.department || '';
+                document.getElementById('employeeIdMobile').value = emp.id;
                 
-                // Carregar histórico se for a seção de histórico
-                if (section === 'history') {
-                    loadEmployeeHistory(id);
-                }
+                deleteBtn.style.display = 'block';
+                deleteBtn.onclick = () => {
+                    showConfirmModal(
+                        'Excluir Funcionário',
+                        `Deseja excluir ${emp.name}?`,
+                        () => {
+                            deleteEmployee(id);
+                            modal.style.display = 'none';
+                        }
+                    );
+                };
             } else {
-                document.getElementById('employeeModalTitle').textContent = "Novo Funcionário";
-                document.getElementById('employeeForm').reset();
-                document.getElementById('employeeId').value = '';
+                // Modo novo funcionário
+                document.getElementById('employeeModalTitleMobile').textContent = "Novo Funcionário";
+                document.getElementById('employeeFormMobile').reset();
+                document.getElementById('employeeIdMobile').value = '';
                 deleteBtn.style.display = 'none';
             }
             
-            document.getElementById('currentMonthYearDisplay').textContent = `${monthNames[currentMonth]} ${currentYear}`;
-            switchEmployeeFormSection(section);
-            if (section === 'days') generateDaysCheckboxes(id);
+            // Gerar checkboxes para dias de folga
+            generateDaysCheckboxesMobile(id);
+            
             modal.style.display = 'flex';
         }
 
-        function switchEmployeeFormSection(section) {
-            currentEmployeeFormSection = section;
-            document.querySelectorAll('.employee-option').forEach(opt => {
-                opt.classList.toggle('active', opt.dataset.form === section);
-            });
-            document.querySelectorAll('.employee-form-section').forEach(sec => {
-                sec.style.display = (sec.id === section + 'Form') ? 'block' : 'none';
-            });
-        }
-
-        function generateDaysCheckboxes(empId) {
-            const container = document.getElementById('daysCheckboxContainer');
+        function generateDaysCheckboxesMobile(empId) {
+            const container = document.getElementById('daysCheckboxContainerMobile');
             container.innerHTML = '';
-            const emp = empId ? employeesData.find(e => e.id === empId) : null;
-            let counts = { total: 0, weekend: 0, holiday: 0 };
             
+            const emp = empId ? employeesData.find(e => e.id === empId) : null;
             const currentKey = getMonthYearKey();
             const daysOffThisMonth = emp && emp.daysOffByMonth ? emp.daysOffByMonth[currentKey] : [];
             
+            // Criar checkboxes para os dias do mês
             for (let day = 1; day <= daysInMonth; day++) {
-                const dow = getDayOfWeek(day, currentMonth, currentYear);
-                const isWknd = dow === 0 || dow === 6;
-                const isHol = isHoliday(day, currentMonth, currentYear);
-                
                 const div = document.createElement('div');
-                div.className = 'day-checkbox-item ' + (isWknd ? 'weekend' : '') + (isHol ? 'holiday' : '');
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.marginBottom = '5px';
+                div.style.padding = '5px';
+                div.style.borderRadius = '4px';
                 
-                const chk = document.createElement('input');
-                chk.type = 'checkbox';
-                chk.value = day;
-                chk.checked = daysOffThisMonth ? daysOffThisMonth.includes(day) : false;
-                
-                if (chk.checked) {
-                    counts.total++;
-                    if(isWknd) counts.weekend++;
-                    if(isHol) counts.holiday++;
+                // Estilo para fins de semana
+                const dow = getDayOfWeek(day, currentMonth, currentYear);
+                if (dow === 0 || dow === 6) {
+                    div.style.backgroundColor = '#fff8e1';
                 }
+                
+                // Estilo para feriados
+                if (isHoliday(day, currentMonth, currentYear)) {
+                    div.style.backgroundColor = '#ffebee';
+                }
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = day;
+                checkbox.checked = daysOffThisMonth ? daysOffThisMonth.includes(day) : false;
+                checkbox.id = `day-${day}`;
+                checkbox.style.marginRight = '10px';
+                checkbox.style.width = '18px';
+                checkbox.style.height = '18px';
+                
+                const label = document.createElement('label');
+                label.htmlFor = `day-${day}`;
+                label.textContent = `Dia ${day} (${weekdayNames[dow]})`;
+                label.style.fontSize = '0.9rem';
+                label.style.flex = '1';
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                container.appendChild(div);
+            }
+        }
 
-                chk.addEventListener('change', function() {
-                    const c = this.checked ? 1 : -1;
-                    counts.total += c;
-                    if(isWknd) counts.weekend += c;
-                    if(isHol) counts.holiday += c;
-                    updateCounts();
+        // --- RESUMO DO MÊS ---
+        function updateMonthSummary() {
+            const summaryEl = document.getElementById('monthSummary');
+            const currentKey = getMonthYearKey();
+            
+            if (employeesData.length === 0) {
+                summaryEl.innerHTML = '<p style="text-align: center; color: var(--gray-color);">Nenhum funcionário cadastrado</p>';
+                return;
+            }
+            
+            let totalDaysOff = 0;
+            let weekendDaysOff = 0;
+            let holidayDaysOff = 0;
+            
+            employeesData.forEach(emp => {
+                const daysOff = emp.daysOffByMonth && emp.daysOffByMonth[currentKey] ? emp.daysOffByMonth[currentKey] : [];
+                totalDaysOff += daysOff.length;
+                
+                daysOff.forEach(day => {
+                    const dow = getDayOfWeek(day, currentMonth, currentYear);
+                    if (dow === 0 || dow === 6) weekendDaysOff++;
+                    if (isHoliday(day, currentMonth, currentYear)) holidayDaysOff++;
+                });
+            });
+            
+            summaryEl.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <div style="background: white; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: var(--gray-color);">Total Funcionários</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">${employeesData.length}</div>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: var(--gray-color);">Total Folgas</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);">${totalDaysOff}</div>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: var(--gray-color);">Fins de Semana</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: var(--warning-color);">${weekendDaysOff}</div>
+                    </div>
+                    <div style="background: white; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: var(--gray-color);">Feriados</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: var(--danger-color);">${holidayDaysOff}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- BACKUP E RESTAURAÇÃO MOBILE ---
+        async function exportBackupMobile() {
+            try {
+                showLoader();
+                
+                // Coletar dados da empresa
+                const companyData = await new Promise((resolve, reject) => {
+                    const transaction = db.transaction([COMPANY_STORE], 'readonly');
+                    const store = transaction.objectStore(COMPANY_STORE);
+                    const request = store.get(1);
+                    
+                    request.onsuccess = (event) => resolve(event.target.result);
+                    request.onerror = (event) => reject(event.target.error);
                 });
                 
-                const lbl = document.createElement('label');
-                lbl.style.marginLeft = "10px";
-                lbl.textContent = `Dia ${day} (${weekdayNames[dow]})` + (isHol ? ` - ${getHolidayName(day, currentMonth, currentYear)}` : '');
-                div.appendChild(chk); div.appendChild(lbl); container.appendChild(div);
-            }
-            
-            function updateCounts() {
-                document.getElementById('totalDaysOff').textContent = counts.total;
-                document.getElementById('weekendDaysOff').textContent = counts.weekend;
-                document.getElementById('holidayDaysOff').textContent = counts.holiday;
-            }
-            updateCounts();
-        }
-
-        function loadEmployeeHistory(empId) {
-            const container = document.getElementById('employeeHistoryContainer');
-            container.innerHTML = '';
-            
-            const emp = employeesData.find(e => e.id === empId);
-            if (!emp || !emp.daysOffByMonth) {
-                container.innerHTML = '<div class="history-empty">Nenhum histórico de folgas encontrado.</div>';
-                return;
-            }
-            
-            const history = emp.daysOffByMonth;
-            const months = Object.keys(history).sort((a, b) => b.localeCompare(a));
-            
-            if (months.length === 0) {
-                container.innerHTML = '<div class="history-empty">Nenhum histórico de folgas encontrado.</div>';
-                return;
-            }
-            
-            months.forEach(monthKey => {
-                const [year, month] = monthKey.split('-');
-                const monthName = monthNamesShort[parseInt(month) - 1];
-                const daysOff = history[monthKey] || [];
+                // Coletar dados dos funcionários
+                const employeesData = await new Promise((resolve, reject) => {
+                    const transaction = db.transaction([EMPLOYEES_STORE], 'readonly');
+                    const store = transaction.objectStore(EMPLOYEES_STORE);
+                    const request = store.getAll();
+                    
+                    request.onsuccess = (event) => resolve(event.target.result);
+                    request.onerror = (event) => reject(event.target.error);
+                });
                 
-                if (daysOff.length > 0) {
-                    const div = document.createElement('div');
-                    div.className = 'history-month';
-                    div.innerHTML = `
-                        <div class="history-month-header">
-                            <span>${monthName}/${year}</span>
-                            <span>${daysOff.length} folgas</span>
-                        </div>
-                        <div class="history-days-list">
-                            ${daysOff.sort((a,b) => a-b).map(day => 
-                                `<span class="history-day">${day}</span>`
-                            ).join('')}
-                        </div>
-                    `;
-                    container.appendChild(div);
-                }
+                const backupData = {
+                    version: 1,
+                    timestamp: new Date().toISOString(),
+                    company: companyData,
+                    employees: employeesData,
+                    exportDate: new Date().toLocaleDateString('pt-BR'),
+                    exportTime: new Date().toLocaleTimeString('pt-BR')
+                };
+                
+                const jsonData = JSON.stringify(backupData, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Criar link para download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup_escala_mobile_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                hideLoader();
+                showToast('Backup exportado com sucesso!');
+                
+            } catch (error) {
+                hideLoader();
+                console.error('Erro ao exportar backup:', error);
+                showToast('Erro ao exportar backup', 'error');
+            }
+        }
+
+        async function importBackupMobile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = async (event) => {
+                    try {
+                        showLoader();
+                        
+                        const backupData = JSON.parse(event.target.result);
+                        
+                        if (!backupData.company || !backupData.employees) {
+                            throw new Error('Arquivo de backup inválido');
+                        }
+                        
+                        // Limpar dados existentes
+                        await clearAllData();
+                        
+                        // Importar dados da empresa
+                        const companyTransaction = db.transaction([COMPANY_STORE], 'readwrite');
+                        const companyStore = companyTransaction.objectStore(COMPANY_STORE);
+                        backupData.company.id = 1;
+                        await new Promise((resolve, reject) => {
+                            const request = companyStore.put(backupData.company);
+                            request.onsuccess = resolve;
+                            request.onerror = reject;
+                        });
+                        
+                        // Importar funcionários
+                        const employeesTransaction = db.transaction([EMPLOYEES_STORE], 'readwrite');
+                        const employeesStore = employeesTransaction.objectStore(EMPLOYEES_STORE);
+                        
+                        for (const employee of backupData.employees) {
+                            await new Promise((resolve, reject) => {
+                                const request = employeesStore.add(employee);
+                                request.onsuccess = resolve;
+                                request.onerror = reject;
+                            });
+                        }
+                        
+                        // Recarregar dados
+                        await loadEmployeesData();
+                        await loadCompanyData();
+                        initTableMobile();
+                        updateEmployeeGrid();
+                        updateMonthSummary();
+                        
+                        hideLoader();
+                        showToast(`Backup importado! ${backupData.employees.length} funcionários restaurados.`);
+                        resolve();
+                        
+                    } catch (error) {
+                        hideLoader();
+                        console.error('Erro ao importar backup:', error);
+                        showToast('Erro ao importar backup', 'error');
+                        reject(error);
+                    }
+                };
+                
+                reader.onerror = (event) => {
+                    hideLoader();
+                    console.error('Erro ao ler arquivo:', event.target.error);
+                    showToast('Erro ao ler arquivo', 'error');
+                    reject(event.target.error);
+                };
+                
+                reader.readAsText(file);
             });
         }
 
-        document.getElementById('employeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('employeeId').value;
-            const data = {
-                name: document.getElementById('employeeName').value,
-                code: document.getElementById('employeeCode').value,
-                role: document.getElementById('employeeRole').value,
-                department: document.getElementById('employeeDepartment').value,
-                email: document.getElementById('employeeEmail').value,
-                phone: document.getElementById('employeePhone').value,
-                notes: document.getElementById('employeeNotes').value
-            };
-            
-            if (id) {
-                data.id = parseInt(id);
-                const existingEmp = employeesData.find(e => e.id === data.id);
-                if (existingEmp && currentEmployeeFormSection !== 'days') {
-                    data.daysOffByMonth = existingEmp.daysOffByMonth || {};
-                }
-            }
-            
-            if (currentEmployeeFormSection === 'days') {
-                const currentKey = getMonthYearKey();
-                const chks = document.querySelectorAll('#daysCheckboxContainer input:checked');
-                if (!data.daysOffByMonth) data.daysOffByMonth = {};
-                data.daysOffByMonth[currentKey] = Array.from(chks).map(c => parseInt(c.value));
-            }
-            
-            try {
-                await saveEmployee(data);
-                document.getElementById('employeeModal').style.display = 'none';
-                updateHistoryDisplay();
-            } catch (error) {
-                console.error('Erro ao salvar funcionário:', error);
-            }
-        });
-
-        // --- IMPRESSÃO AVANÇADA COLORIDA ---
-        function generatePrintHTML() {
+        // --- IMPRESSÃO MOBILE ---
+        function printScaleMobile() {
             const currentKey = getMonthYearKey();
-            let html = `
-                <div class="print-header">
-                    <div class="print-company-name">${document.getElementById('companyNameDisplay').textContent}</div>
-                    <div class="print-company-details">${document.getElementById('companyDetailsDisplay').textContent}</div>
-                    <div class="print-title">ESCALA DE FOLGAS</div>
-                    <div class="print-subtitle">${monthNames[currentMonth]} ${currentYear}</div>
-                </div>
-                <table id="printTable">
-                <thead><tr><th>FUNCIONÁRIO</th>`;
             
-            for(let d=1; d<=daysInMonth; d++) {
-                const dow = getDayOfWeek(d, currentMonth, currentYear);
-                html += `<th>${d}<br>${weekdayNames[dow]}</th>`;
-            }
-            
-            html += `</tr></thead><tbody>`;
-            
-            employeesData.forEach(e => {
-                const daysOffThisMonth = e.daysOffByMonth ? e.daysOffByMonth[currentKey] : [];
-                html += `<tr><td style="font-weight:bold; text-align:left; padding-left:5px">${e.name}</td>`;
-                for(let d=1; d<=daysInMonth; d++) {
-                    const isOff = daysOffThisMonth && daysOffThisMonth.includes(d);
-                    const dow = getDayOfWeek(d, currentMonth, currentYear);
-                    let cls = '';
-                    if (isOff) cls = 'off-day';
-                    else if (dow === 0 || dow === 6) cls = 'weekend';
-                    else if (isHoliday(d, currentMonth, currentYear)) cls = 'holiday';
-                    html += `<td class="${cls}">${isOff ? 'F' : ''}</td>`;
-                }
-                html += `</tr>`;
-            });
-            
-            html += `</tbody></table>
-                <div class="print-footer">Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</div>`;
-            return html;
-        }
-
-        // --- EVENTOS DE CONTROLE ---
-        document.getElementById('editScaleBtn').addEventListener('click', () => {
-            isEditMode = !isEditMode;
-            updateEditModeUI();
-        });
-
-        function updateEditModeUI() {
-            const btn = document.getElementById('editScaleBtn');
-            const ind = document.getElementById('editModeIndicator');
-            if (isEditMode) {
-                btn.innerHTML = '<i class="fas fa-check"></i> Finalizar Edição';
-                btn.className = 'btn btn-success';
-                ind.style.display = 'inline-flex';
-                document.querySelectorAll('.editable').forEach(c => c.style.border = '1px dashed var(--primary-color)');
-            } else {
-                btn.innerHTML = '<i class="fas fa-edit"></i> Editar Escala';
-                btn.className = 'btn btn-primary';
-                ind.style.display = 'none';
-                document.querySelectorAll('.editable').forEach(c => c.style.border = '');
-            }
-        }
-
-        document.getElementById('filterOffDaysBtn').addEventListener('click', function() {
-            isFilterActive = !isFilterActive;
-            const btn = this;
-            const ind = document.getElementById('filterModeIndicator');
-            
-            if (isFilterActive) {
-                applyDayOffFilter();
-                btn.innerHTML = '<i class="fas fa-list"></i> Mostrar Tudo';
-                ind.style.display = 'inline-flex';
-            } else {
-                document.querySelectorAll('th, td').forEach(el => el.style.display = '');
-                btn.innerHTML = '<i class="fas fa-filter"></i> Filtrar Folgas';
-                ind.style.display = 'none';
-            }
-        });
-
-        function applyDayOffFilter() {
-            const currentKey = getMonthYearKey();
-            const activeDays = new Set();
-            employeesData.forEach(e => {
-                if (e.daysOffByMonth && e.daysOffByMonth[currentKey]) {
-                    e.daysOffByMonth[currentKey].forEach(d => activeDays.add(d));
-                }
-            });
-            for(let d=1; d<=daysInMonth; d++) {
-                if(!activeDays.has(d)) {
-                    document.querySelectorAll(`[data-day="${d}"]`).forEach(el => el.style.display = 'none');
-                }
-            }
-        }
-
-        document.getElementById('addEmployeeBtn').onclick = () => openEmployeeModal();
-        document.getElementById('closeEmployeeModal').onclick = () => document.getElementById('employeeModal').style.display = 'none';
-        document.getElementById('companyConfigBtn').onclick = async () => { 
-            const companyData = await loadCompanyData();
-            document.getElementById('companyNameInput').value = companyData.name;
-            document.getElementById('companyAddress').value = companyData.address;
-            document.getElementById('companyPhone').value = companyData.phone;
-            document.getElementById('companyEmail').value = companyData.email;
-            document.getElementById('companyModal').style.display = 'flex'; 
-        };
-        document.getElementById('closeCompanyModal').onclick = () => document.getElementById('companyModal').style.display = 'none';
-        document.getElementById('advancedPrintBtn').onclick = () => document.getElementById('printModal').style.display = 'flex';
-        document.getElementById('closePrintModal').onclick = () => document.getElementById('printModal').style.display = 'none';
-        document.getElementById('clearDatabaseBtn').onclick = () => {
-            document.getElementById('clearDatabaseModal').style.display = 'flex';
-        };
-        document.getElementById('closeClearDatabaseModal').onclick = () => document.getElementById('clearDatabaseModal').style.display = 'none';
-
-        document.getElementById('companyForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const companyData = {
-                name: document.getElementById('companyNameInput').value,
-                address: document.getElementById('companyAddress').value,
-                phone: document.getElementById('companyPhone').value,
-                email: document.getElementById('companyEmail').value
-            };
-            
-            try {
-                await saveCompanyData(companyData);
-                await loadCompanyData();
-                document.getElementById('companyModal').style.display = 'none';
-            } catch (error) {
-                console.error('Erro ao salvar dados da empresa:', error);
-            }
-        };
-
-        document.querySelectorAll('.employee-option').forEach(opt => {
-            opt.addEventListener('click', function() {
-                const section = this.dataset.form;
-                const empId = document.getElementById('employeeId').value ? parseInt(document.getElementById('employeeId').value) : null;
-                switchEmployeeFormSection(section);
-                if (section === 'days') generateDaysCheckboxes(empId);
-                if (section === 'history' && empId) loadEmployeeHistory(empId);
-            });
-        });
-
-        document.getElementById('viewAllHistoryBtn').addEventListener('click', function() {
-            const empId = document.getElementById('employeeId').value ? parseInt(document.getElementById('employeeId').value) : null;
-            if (empId) {
-                loadEmployeeHistory(empId);
-            }
-        });
-
-        // BACKUP E RESTAURAÇÃO
-        document.getElementById('exportBackupBtn').onclick = () => {
-            exportBackup();
-        };
-
-        document.getElementById('importBackupBtn').onclick = () => {
-            document.getElementById('backupFileInput').click();
-        };
-
-        document.getElementById('backupFileInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (!confirm('Importar backup substituirá todos os dados atuais. Continuar?')) {
-                e.target.value = '';
-                return;
-            }
-            
-            try {
-                await importBackup(file);
-                e.target.value = '';
-                updateHistoryDisplay();
-            } catch (error) {
-                console.error('Erro ao importar backup:', error);
-                e.target.value = '';
-            }
-        });
-
-        // LIMPAR DADOS
-        document.getElementById('confirmClearText').addEventListener('input', function() {
-            const confirmBtn = document.getElementById('confirmClearBtn');
-            confirmBtn.disabled = this.value.toUpperCase() !== 'LIMPAR';
-        });
-
-        document.getElementById('confirmClearBtn').onclick = async () => {
-            if (document.getElementById('confirmClearText').value.toUpperCase() !== 'LIMPAR') {
-                return;
-            }
-            
-            if (!confirm('Tem certeza que deseja apagar TODOS os dados? Esta ação não pode ser desfeita.')) {
-                return;
-            }
-            
-            try {
-                await clearAllData();
-                document.getElementById('clearDatabaseModal').style.display = 'none';
-                document.getElementById('confirmClearText').value = '';
-                document.getElementById('confirmClearBtn').disabled = true;
-                updateHistoryDisplay();
-            } catch (error) {
-                console.error('Erro ao limpar dados:', error);
-            }
-        };
-
-        // EXECUTAR IMPRESSÃO
-        document.getElementById('executePrint').onclick = () => {
-            const content = generatePrintHTML();
-            const w = window.open('', '_blank');
-            w.document.write(`
+            // Criar conteúdo para impressão
+            let printContent = `
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Impressão - Escala de Folgas ${monthNames[currentMonth]} ${currentYear}</title>
+                    <title>Escala de Folgas - ${monthNames[currentMonth]} ${currentYear}</title>
                     <style>
-                        @page {
-                            size: landscape;
-                            margin: 5mm;
-                        }
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            padding: 20px; 
-                            background-color: white;
-                            margin: 0;
-                            -webkit-print-color-adjust: exact !important;
-                            print-color-adjust: exact !important;
-                        } 
-                        table { 
-                            width: 100%; 
-                            border-collapse: collapse; 
-                            font-size: 11px; 
-                            border: 1px solid #000 !important;
-                        } 
-                        th, td { 
-                            border: 1px solid #000 !important; 
-                            padding: 5px; 
-                            text-align: center; 
-                            vertical-align: middle;
-                        } 
-                        th { 
-                            background-color: #3498db !important; 
-                            color: white !important; 
-                            -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
-                        }
-                        .off-day { 
-                            background-color: #e8f4fd !important; 
-                            color: #3498db !important; 
-                            font-weight: bold; 
-                            -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
-                        }
-                        .weekend { 
-                            background-color: #fff8e1 !important; 
-                            -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
-                        }
-                        .holiday { 
-                            background-color: #ffebee !important; 
-                            -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
-                        }
-                        .print-header { 
-                            text-align: center; 
-                            margin-bottom: 20px; 
-                            border-bottom: 2px solid #3498db; 
-                            padding-bottom: 10px; 
-                            page-break-after: avoid;
-                        }
-                        .print-company-name { 
-                            font-size: 20px; 
-                            font-weight: bold; 
-                        }
-                        .print-company-details {
-                            font-size: 12px;
-                            margin: 5px 0;
-                        }
-                        .print-title { 
-                            color: #3498db; 
-                            margin-top: 5px; 
-                            text-transform: uppercase; 
-                            font-weight: bold; 
-                            font-size: 16px;
-                        }
-                        .print-subtitle {
-                            font-size: 14px;
-                            margin-top: 3px;
-                        }
-                        .print-footer { 
-                            margin-top: 10px; 
-                            border-top: 1px solid #000; 
-                            font-size: 9px; 
-                            text-align: center; 
-                            page-break-before: avoid;
-                        }
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #3498db; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                        th { background-color: #3498db; color: white; }
+                        .off-day { background-color: #e8f4fd; font-weight: bold; }
+                        .weekend { background-color: #fff8e1; }
+                        .holiday { background-color: #ffebee; }
                     </style>
                 </head>
-                <body>${content}</body>
-                </html>
-            `);
-            w.document.close();
+                <body>
+                    <h1>Escala de Folgas</h1>
+                    <h3>${monthNames[currentMonth]} ${currentYear}</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Funcionário</th>
+            `;
             
-            document.getElementById('printModal').style.display = 'none';
-            
-            setTimeout(() => { 
-                w.focus();
-                w.print();
-                
-                setTimeout(() => {
-                    if (!w.closed) {
-                        w.close();
-                    }
-                }, 1000);
-            }, 500);
-        };
-
-        document.getElementById('resetBtn').onclick = () => {
-            if(confirm('Deseja realmente resetar o sistema? Todos os dados não salvos serão perdidos.')) {
-                location.reload();
+            // Cabeçalho dos dias
+            for (let day = 1; day <= daysInMonth; day++) {
+                printContent += `<th>${day}</th>`;
             }
-        };
+            
+            printContent += `</tr></thead><tbody>`;
+            
+            // Dados dos funcionários
+            employeesData.forEach(emp => {
+                const daysOffThisMonth = emp.daysOffByMonth ? emp.daysOffByMonth[currentKey] : [];
+                
+                printContent += `<tr><td>${emp.name}</td>`;
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const isOff = daysOffThisMonth && daysOffThisMonth.includes(day);
+                    const dow = getDayOfWeek(day, currentMonth, currentYear);
+                    let cls = '';
+                    
+                    if (isOff) cls = 'off-day';
+                    else if (dow === 0 || dow === 6) cls = 'weekend';
+                    else if (isHoliday(day, currentMonth, currentYear)) cls = 'holiday';
+                    
+                    printContent += `<td class="${cls}">${isOff ? 'F' : ''}</td>`;
+                }
+                
+                printContent += `</tr>`;
+            });
+            
+            printContent += `
+                        </tbody>
+                    </table>
+                    <p style="text-align: center; margin-top: 30px; font-size: 0.8em;">
+                        Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}
+                    </p>
+                </body>
+                </html>
+            `;
+            
+            // Abrir janela de impressão
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            
+            // Aguardar carregamento e imprimir
+            printWindow.onload = () => {
+                printWindow.print();
+                printWindow.close();
+            };
+        }
 
-        const monthSelect = document.getElementById('monthSelect');
-        const yearSelect = document.getElementById('yearSelect');
-        
-        function initYearSelect() {
-            const yearSelect = document.getElementById('yearSelect');
+        // --- NAVEGAÇÃO POR TABS ---
+        function switchTab(tabName) {
+            // Atualizar tab atual
+            currentTab = tabName;
+            
+            // Ocultar todas as tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Mostrar tab selecionada
+            document.getElementById(`${tabName}Tab`).style.display = 'block';
+            
+            // Atualizar navegação
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.tab === tabName) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Atualizar conteúdo específico da tab
+            if (tabName === 'reports') {
+                updateMonthSummary();
+            }
+        }
+
+        // --- EVENT LISTENERS MOBILE ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inicializar banco de dados
+            try {
+                await initDatabase();
+                showToast('Sistema carregado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao inicializar:', error);
+                showToast('Erro ao carregar sistema', 'error');
+            }
+            
+            // Inicializar seletor de ano
+            const yearSelect = document.getElementById('yearSelectMobile');
             yearSelect.innerHTML = '';
-            for (let year = 2020; year <= 2030; year++) {
+            for (let year = 2023; year <= 2030; year++) {
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
                 if (year === currentYear) option.selected = true;
                 yearSelect.appendChild(option);
             }
-            document.getElementById('monthSelect').value = currentMonth;
-        }
-        
-        monthSelect.onchange = () => { 
-            currentMonth = parseInt(monthSelect.value); 
-            initTable(); 
-            updateHistoryDisplay();
-        };
-        yearSelect.onchange = () => { 
-            currentYear = parseInt(yearSelect.value); 
-            initTable(); 
-            updateHistoryDisplay();
-        };
-
-        // INICIALIZAÇÃO DO SISTEMA
-        async function initApp() {
-            try {
-                await initDatabase();
-                initYearSelect();
-                showToast('Sistema carregado com sucesso!');
-                console.log('Sistema inicializado com IndexedDB');
-            } catch (error) {
-                console.error('Erro ao inicializar o sistema:', error);
-                showToast('Erro ao inicializar o sistema', 'error');
-                updateDatabaseStatus('Falha na conexão com IndexedDB', 'error');
+            
+            // Configurar evento de mudança de mês/ano
+            document.getElementById('monthSelectMobile').addEventListener('change', () => {
+                currentMonth = parseInt(document.getElementById('monthSelectMobile').value);
+                initTableMobile();
+                updateMonthSummary();
+            });
+            
+            document.getElementById('yearSelectMobile').addEventListener('change', () => {
+                currentYear = parseInt(document.getElementById('yearSelectMobile').value);
+                initTableMobile();
+                updateMonthSummary();
+            });
+            
+            // Botão de edição
+            document.getElementById('editScaleBtnMobile').addEventListener('click', () => {
+                isEditMode = !isEditMode;
+                updateEditModeUI();
+            });
+            
+            // Botão de adicionar funcionário
+            document.getElementById('addEmployeeBtnMobile').addEventListener('click', () => {
+                openEmployeeModalMobile();
+            });
+            
+            document.getElementById('addNewEmployeeBtn').addEventListener('click', () => {
+                openEmployeeModalMobile();
+            });
+            
+            // Botão de hoje
+            document.getElementById('todayBtnMobile').addEventListener('click', () => {
+                const today = new Date();
+                currentMonth = today.getMonth();
+                currentYear = today.getFullYear();
+                
+                document.getElementById('monthSelectMobile').value = currentMonth;
+                document.getElementById('yearSelectMobile').value = currentYear;
+                
+                initTableMobile();
+                updateMonthSummary();
+                showToast('Voltou para o mês atual');
+            });
+            
+            // Botão de filtro
+            document.getElementById('filterBtnMobile').addEventListener('click', () => {
+                isFilterActive = !isFilterActive;
+                const btn = document.getElementById('filterBtnMobile');
+                
+                if (isFilterActive) {
+                    btn.innerHTML = '<i class="fas fa-list"></i> Mostrar Tudo';
+                    // Implementar filtro
+                    showToast('Modo filtro ativado');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-filter"></i> Filtrar';
+                    showToast('Mostrando todos os dias');
+                }
+            });
+            
+            // Menu mobile
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                // Alternar para aba de configurações
+                switchTab('settings');
+            });
+            
+            document.getElementById('mobilePrintBtn').addEventListener('click', () => {
+                document.getElementById('printModalMobile').style.display = 'flex';
+            });
+            
+            // Navegação por tabs
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tab = item.dataset.tab;
+                    switchTab(tab);
+                });
+            });
+            
+            // Tabs de relatórios
+            document.querySelectorAll('.tab-mobile').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remover classe active de todas as tabs
+                    document.querySelectorAll('.tab-mobile').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    // Adicionar classe active à tab clicada
+                    tab.classList.add('active');
+                    
+                    // Ocultar todos os conteúdos
+                    document.querySelectorAll('.report-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    // Mostrar conteúdo correspondente
+                    const reportType = tab.dataset.report;
+                    document.getElementById(`report${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`).style.display = 'block';
+                });
+            });
+            
+            // Formulário de funcionário
+            document.getElementById('employeeFormMobile').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const id = document.getElementById('employeeIdMobile').value;
+                const data = {
+                    name: document.getElementById('employeeNameMobile').value,
+                    code: document.getElementById('employeeCodeMobile').value,
+                    role: document.getElementById('employeeRoleMobile').value,
+                    department: document.getElementById('employeeDepartmentMobile').value
+                };
+                
+                if (id) {
+                    data.id = parseInt(id);
+                    const existingEmp = employeesData.find(e => e.id === data.id);
+                    if (existingEmp) {
+                        data.daysOffByMonth = existingEmp.daysOffByMonth || {};
+                    }
+                }
+                
+                // Coletar dias de folga selecionados
+                const checkboxes = document.querySelectorAll('#daysCheckboxContainerMobile input:checked');
+                const currentKey = getMonthYearKey();
+                
+                if (!data.daysOffByMonth) data.daysOffByMonth = {};
+                data.daysOffByMonth[currentKey] = Array.from(checkboxes).map(c => parseInt(c.value));
+                
+                try {
+                    await saveEmployee(data);
+                    document.getElementById('employeeModalMobile').style.display = 'none';
+                } catch (error) {
+                    console.error('Erro ao salvar funcionário:', error);
+                }
+            });
+            
+            // Fechar modais
+            document.getElementById('closeEmployeeModalMobile').addEventListener('click', () => {
+                document.getElementById('employeeModalMobile').style.display = 'none';
+            });
+            
+            document.getElementById('closePrintModalMobile').addEventListener('click', () => {
+                document.getElementById('printModalMobile').style.display = 'none';
+            });
+            
+            document.getElementById('closeConfirmModal').addEventListener('click', () => {
+                document.getElementById('confirmModalMobile').style.display = 'none';
+            });
+            
+            // Configurações
+            document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+                const companyData = {
+                    name: document.getElementById('companyNameMobile').value,
+                    notifications: document.getElementById('notificationsToggle').checked,
+                    theme: document.getElementById('themeSelect').value
+                };
+                
+                try {
+                    await saveCompanyData(companyData);
+                    showToast('Configurações salvas!');
+                } catch (error) {
+                    console.error('Erro ao salvar configurações:', error);
+                }
+            });
+            
+            // Backup e restauração
+            document.getElementById('exportBackupBtnMobile').addEventListener('click', () => {
+                exportBackupMobile();
+            });
+            
+            document.getElementById('importBackupBtnMobile').addEventListener('click', () => {
+                document.getElementById('backupFileInputMobile').click();
+            });
+            
+            document.getElementById('backupFileInputMobile').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                showConfirmModal(
+                    'Importar Backup',
+                    'Isso substituirá todos os dados atuais. Continuar?',
+                    async () => {
+                        try {
+                            await importBackupMobile(file);
+                            e.target.value = '';
+                        } catch (error) {
+                            console.error('Erro ao importar backup:', error);
+                            e.target.value = '';
+                        }
+                    }
+                );
+            });
+            
+            document.getElementById('clearDataBtnMobile').addEventListener('click', () => {
+                showConfirmModal(
+                    'Limpar Todos os Dados',
+                    'Tem certeza que deseja apagar TODOS os dados? Esta ação não pode ser desfeita.',
+                    async () => {
+                        try {
+                            await clearAllData();
+                            showToast('Dados limpos com sucesso!', 'warning');
+                        } catch (error) {
+                            console.error('Erro ao limpar dados:', error);
+                        }
+                    }
+                );
+            });
+            
+            // Impressão
+            document.getElementById('printSimpleBtn').addEventListener('click', () => {
+                printScaleMobile();
+                document.getElementById('printModalMobile').style.display = 'none';
+            });
+            
+            document.getElementById('printDetailedBtn').addEventListener('click', () => {
+                // Implementar impressão detalhada
+                showToast('Impressão detalhada em desenvolvimento', 'info');
+            });
+            
+            document.getElementById('shareBtn').addEventListener('click', () => {
+                // Implementar compartilhamento
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Escala de Folgas',
+                        text: `Escala de folgas - ${monthNames[currentMonth]} ${currentYear}`,
+                        url: window.location.href
+                    }).catch(console.error);
+                } else {
+                    showToast('Compartilhamento não suportado neste navegador', 'warning');
+                }
+            });
+            
+            // Fechar modais ao clicar fora
+            document.querySelectorAll('.modal-mobile').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Suporte a gestos de deslizar (swipe)
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe para a esquerda - próxima tab
+                        const tabs = ['calendar', 'employees', 'reports', 'settings'];
+                        const currentIndex = tabs.indexOf(currentTab);
+                        if (currentIndex < tabs.length - 1) {
+                            switchTab(tabs[currentIndex + 1]);
+                        }
+                    } else {
+                        // Swipe para a direita - tab anterior
+                        const tabs = ['calendar', 'employees', 'reports', 'settings'];
+                        const currentIndex = tabs.indexOf(currentTab);
+                        if (currentIndex > 0) {
+                            switchTab(tabs[currentIndex - 1]);
+                        }
+                    }
+                }
             }
-        }
+            
+            // Prevenir comportamento padrão de gestos
+            document.addEventListener('touchmove', (e) => {
+                if (e.target.classList.contains('table-wrapper-mobile')) {
+                    e.stopPropagation();
+                }
+            }, { passive: false });
+            
+            // Adicionar suporte a PWA (Progressive Web App)
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+                });
+            }
+        });
 
-        window.addEventListener('DOMContentLoaded', initApp);
+        // Detectar se está em modo standalone (PWA)
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('Executando como PWA');
+            document.body.classList.add('pwa-mode');
+        }
     </script>
 </body>
 </html>
